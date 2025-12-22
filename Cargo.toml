@@ -1,4 +1,7 @@
 [dependencies]
+clap = {version = "4.5.53", features = ["derive"]}
+tokio = {version = "1.48.0", features = ["full"]}
+tokio-stream = "0.1.17"
 
 [package]
 name = "nimi"
