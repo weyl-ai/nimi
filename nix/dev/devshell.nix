@@ -1,6 +1,6 @@
 {
   perSystem =
-    { pkgs, self', ... }:
+    { pkgs, ... }:
     let
       inherit (pkgs) lib stdenv;
 
