@@ -1,3 +1,8 @@
+//! Process Manager implementation for `Nimi`
+//!
+//! Can take a rust represntation of some `NixOS` modular services
+//! and runs them streaming logs back to the original console.
+
 use crate::error::Result;
 
 use console::style;
@@ -10,11 +15,15 @@ pub use service::Service;
 
 const ANSI_ORANGE: u8 = 208;
 
+/// Process Manager Struct
+///
+/// Responsible for starting the services and streaming their outputs to the console
 pub struct ProcessManager {
     services: Vec<Service>,
 }
 
 impl ProcessManager {
+    /// Create a new process manager instance
     pub fn new(services: Vec<Service>) -> Self {
         Self { services }
     }
@@ -25,6 +34,9 @@ impl ProcessManager {
         println!("{} {}", title, msg)
     }
 
+    /// Run the services defined for the process manager instance
+    ///
+    /// Terminates on `Ctrl-C`
     pub async fn run(self) -> Result<()> {
         Self::print_manager_message("Starting services...");
         let (shutdown_tx, _) = broadcast::channel::<()>(1);

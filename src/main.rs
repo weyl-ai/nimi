@@ -1,4 +1,6 @@
-use std::collections::HashMap;
+#![warn(missing_docs)]
+
+//! [`Tini`](https://github.com/krallin/tini)-like PID 1 for containers and target for [NixOS modular services](https://nixos.org/manual/nixos/unstable/#modular-services).
 
 use clap::{Parser, command};
 

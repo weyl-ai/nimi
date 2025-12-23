@@ -1,9 +1,9 @@
 use std::path::PathBuf;
 
 pub struct ConfigData {
-    enabled: bool,
-    name: String,
-    path: PathBuf,
-    text: Option<String>,
-    source: PathBuf,
+    pub enabled: bool,
+    pub name: String,
+    pub path: PathBuf,
+    pub text: Option<String>,
+    pub source: PathBuf,
 }
