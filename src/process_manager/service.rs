@@ -52,6 +52,11 @@ impl Service {
     pub async fn run(self, mut shutdown_rx: broadcast::Receiver<()>) -> Result<()> {
         let config_dir = self.create_config_directory().await?;
 
+        assert!(
+            !self.argv.is_empty(),
+            "You must give at least one argument to `process.argv` to run a service"
+        );
+
         let mut process = Command::new(self.argv[0].clone())
             .args(self.argv[1..].iter())
             .env_clear()
