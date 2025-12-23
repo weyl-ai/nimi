@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 use clap::{Parser, command};
 
+pub use crate::error::{Error, Result};
 use crate::process_manager::{ProcessManager, Service};
 
 pub mod error;
@@ -22,29 +23,27 @@ struct Args {
 }
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
+async fn main() -> Result<()> {
     let manager = ProcessManager::new(vec![
-        (Service {
-            name: "HTTP Server".to_string(),
-            argv: vec![
+        Service::new(
+            "HTTP Server".to_string(),
+            vec![
                 "nix".to_string(),
                 "run".to_string(),
                 "nixpkgs#http-server".to_string(),
             ],
-            ..Default::default()
-        }),
-        (Service {
-            name: "HTTP Server 2".to_string(),
-            argv: vec![
+            Default::default(),
+        ),
+        Service::new(
+            "HTTP Server 2".to_string(),
+            vec![
                 "nix".to_string(),
                 "run".to_string(),
                 "nixpkgs#http-server".to_string(),
             ],
-            ..Default::default()
-        }),
+            Default::default(),
+        ),
     ]);
 
-    manager.run().await;
-
-    Ok(())
+    manager.run().await
 }

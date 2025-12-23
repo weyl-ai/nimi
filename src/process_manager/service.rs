@@ -1,5 +1,8 @@
 use crate::error::Result;
-use std::{collections::HashMap, process::Stdio};
+
+use console::style;
+use rand::Rng;
+use std::{collections::HashMap, fmt::Display, process::Stdio};
 use tokio::{
     io::{AsyncBufReadExt, BufReader},
     process::Command,
@@ -12,12 +15,31 @@ pub use config_data::ConfigData;
 
 #[derive(Default)]
 pub struct Service {
-    pub name: String,
-    pub config_data: HashMap<String, ConfigData>,
-    pub argv: Vec<String>,
+    name: String,
+    config_data: HashMap<String, ConfigData>,
+    argv: Vec<String>,
+
+    output_color: u8,
 }
 
 impl Service {
+    pub fn new(name: String, argv: Vec<String>, config_data: HashMap<String, ConfigData>) -> Self {
+        let output_color = rand::rng().random();
+
+        Self {
+            name,
+            config_data,
+            argv,
+            output_color,
+        }
+    }
+
+    fn print_service_message(&self, msg: impl Display) {
+        let title = style(format!("<{}>", self.name)).color256(self.output_color);
+
+        println!("{} {}", title, msg)
+    }
+
     pub async fn run(self, mut shutdown_rx: broadcast::Receiver<()>) -> Result<()> {
         let mut process = Command::new(self.argv[0].clone())
             .args(self.argv[1..].iter())
@@ -41,26 +63,26 @@ impl Service {
         loop {
             tokio::select! {
                 _ = shutdown_rx.recv() => {
-                    println!("[{}] Received shutdown signal", self.name);
+                    self.print_service_message("Received shutdown signal");
                     process.kill().await.ok();
                     break;
                 }
                 line = stdout_reader.next_line() => {
                     match line {
-                        Ok(Some(line)) => println!("[{}] {}", self.name, line),
+                        Ok(Some(line)) => self.print_service_message(line),
                         Ok(None) => break,
                         Err(e) => {
-                            eprintln!("[{}] stdout error: {}", self.name, e);
+                            self.print_service_message(e);
                             break;
                         }
                     }
                 }
                 line = stderr_reader.next_line() => {
                     match line {
-                        Ok(Some(line)) => eprintln!("[{}] ERR: {}", self.name, line),
+                        Ok(Some(line)) => self.print_service_message(format!("ERR: {line}")),
                         Ok(None) => break,
                         Err(e) => {
-                            eprintln!("[{}] stderr error: {}", self.name, e);
+                            self.print_service_message(format!("stderr error: {e}"));
                             break;
                         }
                     }

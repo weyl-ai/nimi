@@ -1,10 +1,14 @@
 use crate::error::Result;
 
+use console::style;
+use std::fmt::Display;
 use tokio::sync::broadcast;
 
 mod service;
 
 pub use service::Service;
+
+const ANSI_ORANGE: u8 = 208;
 
 pub struct ProcessManager {
     services: Vec<Service>,
@@ -15,7 +19,14 @@ impl ProcessManager {
         Self { services }
     }
 
+    fn print_manager_message(msg: impl Display) {
+        let title = style("<nimi>").color256(ANSI_ORANGE);
+
+        println!("{} {}", title, msg)
+    }
+
     pub async fn run(self) -> Result<()> {
+        Self::print_manager_message("Starting services...");
         let (shutdown_tx, _) = broadcast::channel::<()>(1);
 
         let handles: Vec<_> = self
@@ -28,13 +39,15 @@ impl ProcessManager {
             .collect();
 
         tokio::signal::ctrl_c().await?;
-        println!("\nShutting down...");
+        Self::print_manager_message("Shutting down...");
 
         let _ = shutdown_tx.send(());
 
         for handle in handles {
             let _ = handle.await;
         }
+
+        Self::print_manager_message("Finished shutdown");
 
         Ok(())
     }
