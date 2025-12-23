@@ -4,6 +4,8 @@ use tokio::io::{AsyncBufReadExt, BufReader};
 use tokio::process::Command;
 use tokio::sync::broadcast;
 
+mod process_manager;
+
 /// NixOS modular services runner and container init
 ///
 /// # Examples
