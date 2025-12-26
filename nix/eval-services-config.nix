@@ -1,5 +1,11 @@
-{ lib, flake-parts-lib, ... }:
+{
+  flake-parts-lib,
+  inputs,
+  ...
+}:
 let
+  inherit (inputs) nixpkgs;
+  inherit (nixpkgs) lib;
   inherit (flake-parts-lib) mkPerSystemOption;
   inherit (lib) mkOption types;
 in
@@ -15,24 +21,60 @@ in
 
   config.perSystem =
     { self', pkgs, ... }:
+    let
+      lib = pkgs.lib;
+
+      nimiModule = {
+        options.services = mkOption {
+          description = ''
+            Services to run inside the nimi runtime
+          '';
+          type = types.attrsOf (
+            types.submoduleWith {
+              class = "service";
+              modules = [ (lib.modules.importApply "${inputs.nixpkgs}/nixos/modules/system/service/portable/service.nix" { inherit pkgs; }) ];
+              specialArgs = {
+                inherit pkgs;
+              };
+            }
+          );
+          default = { };
+          visible = "shallow";
+        };
+      };
+    in
     {
       evalServicesConfig =
-        modules:
+        module:
         let
           evaluatedConfig = lib.evalModules {
-            inherit modules;
+            modules = [
+              nimiModule
+              module
+            ];
             class = "service";
           };
 
           inputJSON = builtins.toJSON evaluatedConfig.config;
 
-          configFile = builtins.toFile "nimi-config.json" inputJSON;
+          validatedJSON =
+            pkgs.runCommandLocal "nimi-config-validated.json"
+              {
+                nativeBuildInputs = [ self'.packages.nimi ];
+              }
+              ''
+                cat > "$out" <<EOF
+                ${inputJSON}
+                EOF
+
+                nimi validate "$out"
+              '';
         in
         pkgs.writeShellApplication {
           name = "nimi";
           runtimeInputs = [ self'.packages.nimi ];
           text = ''
-            exec nimi --config "${configFile}" "$@"
+            exec nimi --config "${validatedJSON}" "$@"
           '';
         };
     };
