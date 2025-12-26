@@ -4,7 +4,7 @@ let
 in
 {
   perSystem =
-    { pkgs, ... }:
+    { pkgs, config, ... }:
     rec {
       packages.nimi = pkgs.rustPlatform.buildRustPackage (_finalAttrs: {
         pname = cargoToml.package.name;
@@ -30,6 +30,10 @@ in
           license = lib.licenses.mit;
           maintainers = [ lib.maintainers.baileylu ];
           mainProgram = "nimi";
+        };
+
+        passthru = {
+          inherit (config) evalServicesConfig;
         };
       });
 

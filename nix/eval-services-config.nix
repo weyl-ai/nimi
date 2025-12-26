@@ -5,7 +5,7 @@ let
 in
 {
   options.perSystem = mkPerSystemOption {
-    options.mkWrapper = mkOption {
+    options.evalServicesConfig = mkOption {
       description = ''
         Function for generating a configured Nimi instance
       '';
@@ -16,7 +16,7 @@ in
   config.perSystem =
     { self', pkgs, ... }:
     {
-      mkWrapper =
+      evalServicesConfig =
         modules:
         let
           evaluatedConfig = lib.evalModules {
