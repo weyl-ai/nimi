@@ -59,12 +59,12 @@ impl ProcessManager {
                         return Ok(());
                     }
 
+                    current_count += 1;
+
                     info!(
                         "Process {} exited, restarting (mode: up-to-count {}/{})",
                         &name, current_count, settings.restart.count
                     );
-
-                    current_count += 1;
                 }
                 RestartMode::Never => {
                     info!("Process {} exited, not restarting (mode: never)", &name,);
