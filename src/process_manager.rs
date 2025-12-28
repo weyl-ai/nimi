@@ -73,7 +73,13 @@ impl ProcessManager {
                 }
             }
 
-            tokio::time::sleep(sleep_time).await;
+            tokio::select! {
+                _ = tokio::time::sleep(sleep_time) => {},
+                _ = shutdown_rx.recv() => {
+                    info!("Received shutdown during restart delay for {}", name);
+                    return Ok(());
+                }
+            }
         }
     }
 
