@@ -3,10 +3,9 @@
 //! Can take a rust represntation of some `NixOS` modular services
 //! and runs them streaming logs back to the original console.
 
-use console::style;
 use eyre::{Context, Result};
 use log::info;
-use std::{collections::HashMap, fmt::Display, sync::Arc};
+use std::{collections::HashMap, sync::Arc};
 use tokio::sync::{Mutex, broadcast};
 
 mod service;
@@ -16,8 +15,6 @@ pub use service::Service;
 pub use settings::Settings;
 
 use crate::process_manager::settings::RestartMode;
-
-const ANSI_ORANGE: u8 = 208;
 
 /// Process Manager Struct
 ///
@@ -33,17 +30,10 @@ impl ProcessManager {
         Self { services, settings }
     }
 
-    fn print_manager_message(msg: impl Display) {
-        let title = style("<nimi>").color256(ANSI_ORANGE);
-
-        println!("{} {}", title, msg)
-    }
-
     async fn run_process(
         settings: Arc<Mutex<Settings>>,
         name: &str,
         service: Service,
-        output_color: u8,
         mut shutdown_rx: broadcast::Receiver<()>,
     ) -> Result<()> {
         let settings = settings.lock().await;
@@ -51,7 +41,7 @@ impl ProcessManager {
         let mut current_count = 0;
 
         loop {
-            service.run(name, output_color, &mut shutdown_rx).await?;
+            service.run(name, &mut shutdown_rx).await?;
 
             match settings.restart.mode {
                 RestartMode::Always => {
@@ -82,7 +72,7 @@ impl ProcessManager {
     ///
     /// Terminates on `Ctrl-C`
     pub async fn run(self) -> Result<()> {
-        Self::print_manager_message("Starting services...");
+        info!("Starting process manager...");
         let (shutdown_tx, _) = broadcast::channel::<()>(1);
 
         let sub_proc_settings = Arc::new(Mutex::new(self.settings));
@@ -94,7 +84,7 @@ impl ProcessManager {
                 let shutdown_rx = shutdown_tx.subscribe();
                 let sub_proc_man = Arc::clone(&sub_proc_settings);
                 tokio::spawn(async move {
-                    Self::run_process(sub_proc_man, &name, service, 24, shutdown_rx).await
+                    Self::run_process(sub_proc_man, &name, service, shutdown_rx).await
                 })
             })
             .collect();
@@ -102,7 +92,8 @@ impl ProcessManager {
         tokio::signal::ctrl_c()
             .await
             .wrap_err("Failed to listen for shutdown event")?;
-        Self::print_manager_message("Shutting down...");
+
+        info!("Shutting down...");
 
         let _ = shutdown_tx.send(());
 
@@ -110,7 +101,7 @@ impl ProcessManager {
             let _ = handle.await;
         }
 
-        Self::print_manager_message("Finished shutdown");
+        info!("Finished shutdown");
 
         Ok(())
     }

@@ -28,6 +28,9 @@
             unsafeTarget = true;
           };
         };
+        services."exits-right-away" = {
+          process.argv = ["sh" "-c" "echo boom >&2; exit 42"];
+        };
         settings.restart.mode = "never";
       };
     };

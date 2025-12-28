@@ -1,7 +1,7 @@
-use console::style;
 use eyre::{Context, ContextCompat, Result, eyre};
+use log::{debug, error};
 use serde::{Deserialize, Serialize};
-use std::{collections::HashMap, env, fmt::Display, path::PathBuf, process::Stdio};
+use std::{collections::HashMap, env, path::PathBuf, process::Stdio};
 use tokio::{
     fs,
     io::{AsyncBufReadExt, BufReader},
@@ -30,12 +30,6 @@ pub struct Service {
 }
 
 impl Service {
-    fn print_service_message(&self, name: &str, output_color: u8, msg: impl Display) {
-        let title = style(format!("<{}>", name)).color256(output_color);
-
-        println!("{} {}", title, msg)
-    }
-
     async fn create_config_directory(&self) -> Result<PathBuf> {
         let dir = env::temp_dir();
 
@@ -52,12 +46,7 @@ impl Service {
     }
 
     /// Runs a service to completion, streaming it's logs to the console
-    pub async fn run(
-        &self,
-        name: &str,
-        output_color: u8,
-        shutdown_rx: &mut broadcast::Receiver<()>,
-    ) -> Result<()> {
+    pub async fn run(&self, name: &str, shutdown_rx: &mut broadcast::Receiver<()>) -> Result<()> {
         let config_dir = self.create_config_directory().await?;
 
         if self.process.argv.is_empty() {
@@ -96,26 +85,26 @@ impl Service {
         loop {
             tokio::select! {
                 _ = shutdown_rx.recv() => {
-                    self.print_service_message(name, output_color, "Received shutdown signal");
+                    debug!(target: name, "Recieved shutdown signal");
                     process.kill().await.wrap_err("Failed to kill service process")?;
                     break;
                 }
                 line = stdout_reader.next_line() => {
                     match line {
-                        Ok(Some(line)) => self.print_service_message(name, output_color, line),
+                        Ok(Some(line)) => debug!(target: name, "{}", line),
                         Ok(None) => break,
                         Err(e) => {
-                            self.print_service_message(name, output_color, e);
+                            error!(target: name, "{}", e);
                             break;
                         }
                     }
                 }
                 line = stderr_reader.next_line() => {
                     match line {
-                        Ok(Some(line)) => self.print_service_message(name, output_color, format!("ERR: {line}")),
+                        Ok(Some(line)) => error!(target: name, "{}", line),
                         Ok(None) => break,
                         Err(e) => {
-                            self.print_service_message(name, output_color, format!("stderr error: {e}"));
+                            error!(target: name, "{}", e);
                             break;
                         }
                     }

@@ -1,7 +1,6 @@
 [dependencies]
 clap = {version = "4.5.53", features = ["derive"]}
 color-eyre = "0.6.5"
-console = "0.16.2"
 env_logger = "0.11.8"
 eyre = "0.6.12"
 format_serde_error = "0.3.0"
