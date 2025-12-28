@@ -1,6 +1,8 @@
 //! Module containing the deserialized representation of the config generated via the NixOS modules
 //! system config for nimi
 
+use std::collections::HashMap;
+
 use serde::{Deserialize, Serialize};
 
 use crate::process_manager::Service;
@@ -11,5 +13,5 @@ use crate::process_manager::Service;
 /// Create this by using the nix package to run `nimi.evalServicesConfig`
 pub struct Config {
     /// Deserialize representation of services
-    pub services: Vec<Service>,
+    pub services: HashMap<String, Service>,
 }

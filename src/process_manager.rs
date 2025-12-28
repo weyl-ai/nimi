@@ -5,7 +5,7 @@
 
 use console::style;
 use eyre::{Context, Result};
-use std::fmt::Display;
+use std::{collections::HashMap, fmt::Display};
 use tokio::sync::broadcast;
 
 mod service;
@@ -18,12 +18,12 @@ const ANSI_ORANGE: u8 = 208;
 ///
 /// Responsible for starting the services and streaming their outputs to the console
 pub struct ProcessManager {
-    services: Vec<Service>,
+    services: HashMap<String, Service>,
 }
 
 impl ProcessManager {
     /// Create a new process manager instance
-    pub fn new(services: Vec<Service>) -> Self {
+    pub fn new(services: HashMap<String, Service>) -> Self {
         Self { services }
     }
 
@@ -43,9 +43,9 @@ impl ProcessManager {
         let handles: Vec<_> = self
             .services
             .into_iter()
-            .map(|service| {
+            .map(|(name, service)| {
                 let shutdown_rx = shutdown_tx.subscribe();
-                tokio::spawn(async move { service.run(shutdown_rx).await })
+                tokio::spawn(async move { service.run(&name, 24, shutdown_rx).await })
             })
             .collect();
 

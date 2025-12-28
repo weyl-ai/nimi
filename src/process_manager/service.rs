@@ -1,7 +1,7 @@
 use console::style;
 use eyre::{Context, ContextCompat, Result, eyre};
 use serde::{Deserialize, Serialize};
-use std::{env, fmt::Display, path::PathBuf, process::Stdio};
+use std::{collections::HashMap, env, fmt::Display, path::PathBuf, process::Stdio};
 use tokio::{
     fs,
     io::{AsyncBufReadExt, BufReader},
@@ -10,8 +10,10 @@ use tokio::{
 };
 
 mod config_data;
+mod process;
 
 pub use config_data::ConfigData;
+pub use process::Process;
 
 /// Service Struct
 ///
@@ -19,20 +21,17 @@ pub use config_data::ConfigData;
 /// Modules](https://github.com/NixOS/nixpkgs/blob/3574a048b30fdc5131af4069bd5e14980ce0a6d8/nixos/modules/system/service/portable/service.nix).
 #[derive(Debug, Default, Serialize, Deserialize)]
 pub struct Service {
-    /// The name of the service
-    pub name: String,
     /// Configuration files for the service
-    pub config_data: Vec<ConfigData>,
-    /// Argv used to run the service
-    pub argv: Vec<String>,
+    #[serde(rename = "configData")]
+    pub config_data: HashMap<String, ConfigData>,
 
-    /// Output color to render header with
-    pub output_color: u8,
+    /// Process configuration
+    pub process: Process,
 }
 
 impl Service {
-    fn print_service_message(&self, msg: impl Display) {
-        let title = style(format!("<{}>", self.name)).color256(self.output_color);
+    fn print_service_message(&self, name: &str, output_color: u8, msg: impl Display) {
+        let title = style(format!("<{}>", name)).color256(output_color);
 
         println!("{} {}", title, msg)
     }
@@ -40,7 +39,7 @@ impl Service {
     async fn create_config_directory(&self) -> Result<PathBuf> {
         let dir = env::temp_dir();
 
-        for cfg in &self.config_data {
+        for cfg in self.config_data.values() {
             let out_location = dir.join(&cfg.path);
             fs::symlink(&cfg.source, out_location)
                 .await
@@ -53,17 +52,22 @@ impl Service {
     }
 
     /// Runs a service to completion, streaming it's logs to the console
-    pub async fn run(self, mut shutdown_rx: broadcast::Receiver<()>) -> Result<()> {
+    pub async fn run(
+        self,
+        name: &str,
+        output_color: u8,
+        mut shutdown_rx: broadcast::Receiver<()>,
+    ) -> Result<()> {
         let config_dir = self.create_config_directory().await?;
 
-        if self.argv.is_empty() {
+        if self.process.argv.is_empty() {
             return Err(eyre!(
                 "You must give at least one argument to `process.argv` to run a service"
             ));
         }
 
-        let mut process = Command::new(self.argv[0].clone())
-            .args(self.argv[1..].iter())
+        let mut process = Command::new(self.process.argv[0].clone())
+            .args(self.process.argv[1..].iter())
             .env_clear()
             .env("XDG_CONFIG_HOME", config_dir)
             .stdout(Stdio::piped())
@@ -71,7 +75,10 @@ impl Service {
             .kill_on_drop(true)
             .spawn()
             .wrap_err_with(|| {
-                format!("Failed to start process. `process.argv`: {:?}", self.argv)
+                format!(
+                    "Failed to start process. `process.argv`: {:?}",
+                    self.process.argv
+                )
             })?;
 
         let stdout = process
@@ -89,26 +96,26 @@ impl Service {
         loop {
             tokio::select! {
                 _ = shutdown_rx.recv() => {
-                    self.print_service_message("Received shutdown signal");
+                    self.print_service_message(name, output_color, "Received shutdown signal");
                     process.kill().await.wrap_err("Failed to kill service process")?;
                     break;
                 }
                 line = stdout_reader.next_line() => {
                     match line {
-                        Ok(Some(line)) => self.print_service_message(line),
+                        Ok(Some(line)) => self.print_service_message(name, output_color, line),
                         Ok(None) => break,
                         Err(e) => {
-                            self.print_service_message(e);
+                            self.print_service_message(name, output_color, e);
                             break;
                         }
                     }
                 }
                 line = stderr_reader.next_line() => {
                     match line {
-                        Ok(Some(line)) => self.print_service_message(format!("ERR: {line}")),
+                        Ok(Some(line)) => self.print_service_message(name, output_color, format!("ERR: {line}")),
                         Ok(None) => break,
                         Err(e) => {
-                            self.print_service_message(format!("stderr error: {e}"));
+                            self.print_service_message(name, output_color, format!("stderr error: {e}"));
                             break;
                         }
                     }
