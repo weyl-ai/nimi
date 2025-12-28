@@ -51,14 +51,18 @@ impl ProcessManager {
                     info!("Process {} exited, restarting (mode: always)", &name);
                 }
                 RestartMode::UpToCount => {
+                    if current_count >= settings.restart.count {
+                        info!(
+                            "Process {} exited, not restarting (mode: up-to-count {}/{})",
+                            &name, current_count, settings.restart.count
+                        );
+                        return Ok(());
+                    }
+
                     info!(
                         "Process {} exited, restarting (mode: up-to-count {}/{})",
                         &name, current_count, settings.restart.count
                     );
-
-                    if current_count >= settings.restart.count {
-                        return Ok(());
-                    }
 
                     current_count += 1;
                 }
