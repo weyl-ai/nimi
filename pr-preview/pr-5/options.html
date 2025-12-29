@@ -96,6 +96,92 @@
   
   <li>
     <details class="toc-category">
+      <summary title="settings.container">
+        <span>settings.container</span>
+        <span class="toc-count">9</span>
+      </summary>
+      <ul>
+        
+        <li>
+          <a href='#option-settings-container' class="parent-option" title="settings.container">
+            settings.container
+            
+            
+          </a>
+        </li>
+        
+
+        
+        <li>
+          <a href='#option-settings-container-copyToRoot' title="settings.container.copyToRoot">
+            copyToRoot
+            
+            
+          </a>
+        </li>
+        
+        <li>
+          <a href='#option-settings-container-fromImage' title="settings.container.fromImage">
+            fromImage
+            
+            
+          </a>
+        </li>
+        
+        <li>
+          <a href='#option-settings-container-initializeNixDatabase' title="settings.container.initializeNixDatabase">
+            initializeNixDatabase
+            
+            
+          </a>
+        </li>
+        
+        <li>
+          <a href='#option-settings-container-layers' title="settings.container.layers">
+            layers
+            
+            
+          </a>
+        </li>
+        
+        <li>
+          <a href='#option-settings-container-maxLayers' title="settings.container.maxLayers">
+            maxLayers
+            
+            
+          </a>
+        </li>
+        
+        <li>
+          <a href='#option-settings-container-name' title="settings.container.name">
+            name
+            
+            
+          </a>
+        </li>
+        
+        <li>
+          <a href='#option-settings-container-perms' title="settings.container.perms">
+            perms
+            
+            
+          </a>
+        </li>
+        
+        <li>
+          <a href='#option-settings-container-tag' title="settings.container.tag">
+            tag
+            
+            
+          </a>
+        </li>
+        
+      </ul>
+    </details>
+  </li>
+  
+  <li>
+    <details class="toc-category">
       <summary title="settings.restart">
         <span>settings.restart</span>
         <span class="toc-count">4</span>
@@ -297,6 +383,131 @@ then overriding or extending its options.</p>
 </code></pre></div>
   <div class="option-declared">Declared in: <code>services</code></div>
 </div>
+<div class="option" id="option-settings-container">
+  <h3 class="option-name">
+    <a href="#option-settings-container" class="option-anchor">settings.container</a>
+    <span class="copy-link" title="Copy link to this option"></span>
+    <span class="copy-feedback">Link copied!</span>
+  </h3>
+  <div class="option-type">Type: <code>submodule</code></div>
+  <div class="option-description"><html><head></head><body><p>Configures nimi's builtin container generation.</p>
+<p>Note that none of these options will have any effect unless you are using
+<code>nimi.mkContainerImage</code> to build your containers.</p>
+<p>These are mappings to <a href="https://github.com/nlewo/nix2container?tab=readme-ov-file#nix2containerbuildimage"><code>nix2container</code>'s <code>buildImage</code></a> function, please
+check there for further documentation.</p>
+</body></html></div>
+  <div class="option-default">Default: <code>{ }</code></div>
+  <div class="option-declared">Declared in: <code><a href="file:///nix/store/qgscpgsy8pmh1xz2dxik0mvm93v4hyz9-source/nimi/container.nix" target="_blank">/nix/store/qgscpgsy8pmh1xz2dxik0mvm93v4hyz9-source/nimi/container.nix</a></code></div>
+</div>
+<div class="option" id="option-settings-container-copyToRoot">
+  <h3 class="option-name">
+    <a href="#option-settings-container-copyToRoot" class="option-anchor">settings.container.copyToRoot</a>
+    <span class="copy-link" title="Copy link to this option"></span>
+    <span class="copy-feedback">Link copied!</span>
+  </h3>
+  <div class="option-type">Type: <code>path in the Nix store or list of path in the Nix store</code></div>
+  <div class="option-description"><html><head></head><body><p>A derivation (or list of derivations) copied in the image root directory
+(store path prefixes <code>/nix/store/hash-path</code> are removed,
+in order to relocate them at the image <code>/</code>).</p>
+<p><code>pkgs.buildEnv</code> can be used to build a derivation which has to
+be copied to the image root. For instance, to get bash and
+coreutils in the image <code>/bin</code>:</p>
+</body></html></div>
+  <div class="option-default">Default: <code>[ ]</code></div>
+  <div class="option-declared">Declared in: <code><a href="file:///nix/store/qgscpgsy8pmh1xz2dxik0mvm93v4hyz9-source/nimi/container.nix" target="_blank">/nix/store/qgscpgsy8pmh1xz2dxik0mvm93v4hyz9-source/nimi/container.nix</a></code></div>
+</div>
+<div class="option" id="option-settings-container-fromImage">
+  <h3 class="option-name">
+    <a href="#option-settings-container-fromImage" class="option-anchor">settings.container.fromImage</a>
+    <span class="copy-link" title="Copy link to this option"></span>
+    <span class="copy-feedback">Link copied!</span>
+  </h3>
+  <div class="option-type">Type: <code>null or path in the Nix store</code></div>
+  <div class="option-description"><html><head></head><body><p>An image that is used as base image of this image;</p>
+<p>Use <code>nix2container.pullImage</code> or <code>nix2container.pullImageFromManifest</code> to supply this.</p>
+</body></html></div>
+  <div class="option-default">Default: <code>null</code></div>
+  <div class="option-declared">Declared in: <code><a href="file:///nix/store/qgscpgsy8pmh1xz2dxik0mvm93v4hyz9-source/nimi/container.nix" target="_blank">/nix/store/qgscpgsy8pmh1xz2dxik0mvm93v4hyz9-source/nimi/container.nix</a></code></div>
+</div>
+<div class="option" id="option-settings-container-initializeNixDatabase">
+  <h3 class="option-name">
+    <a href="#option-settings-container-initializeNixDatabase" class="option-anchor">settings.container.initializeNixDatabase</a>
+    <span class="copy-link" title="Copy link to this option"></span>
+    <span class="copy-feedback">Link copied!</span>
+  </h3>
+  <div class="option-type">Type: <code>boolean</code></div>
+  <div class="option-description"><html><head></head><body><p>To initialize the Nix database with all store paths added into the image.</p>
+<p>Note this is only useful to run nix commands from the image,
+for instance to build an image used by a CI to run Nix builds.</p>
+</body></html></div>
+  <div class="option-default">Default: <code>false</code></div>
+  <div class="option-declared">Declared in: <code><a href="file:///nix/store/qgscpgsy8pmh1xz2dxik0mvm93v4hyz9-source/nimi/container.nix" target="_blank">/nix/store/qgscpgsy8pmh1xz2dxik0mvm93v4hyz9-source/nimi/container.nix</a></code></div>
+</div>
+<div class="option" id="option-settings-container-layers">
+  <h3 class="option-name">
+    <a href="#option-settings-container-layers" class="option-anchor">settings.container.layers</a>
+    <span class="copy-link" title="Copy link to this option"></span>
+    <span class="copy-feedback">Link copied!</span>
+  </h3>
+  <div class="option-type">Type: <code>list of path in the Nix store</code></div>
+  <div class="option-description"><html><head></head><body><p>A list of layers built with the <code>nix2container.buildLayer</code> function.</p>
+<p>If a store path in deps or contents belongs to one of these layers, this store path is skipped.</p>
+<p>This is pretty useful to isolate store paths that are often updated from more stable store paths,
+to speed up build and push time.</p>
+</body></html></div>
+  <div class="option-default">Default: <code>[ ]</code></div>
+  <div class="option-declared">Declared in: <code><a href="file:///nix/store/qgscpgsy8pmh1xz2dxik0mvm93v4hyz9-source/nimi/container.nix" target="_blank">/nix/store/qgscpgsy8pmh1xz2dxik0mvm93v4hyz9-source/nimi/container.nix</a></code></div>
+</div>
+<div class="option" id="option-settings-container-maxLayers">
+  <h3 class="option-name">
+    <a href="#option-settings-container-maxLayers" class="option-anchor">settings.container.maxLayers</a>
+    <span class="copy-link" title="Copy link to this option"></span>
+    <span class="copy-feedback">Link copied!</span>
+  </h3>
+  <div class="option-type">Type: <code>positive integer, meaning >0</code></div>
+  <div class="option-description"><html><head></head><body><p>The maximum number of layers to create.</p>
+<p>This is based on the store path "popularity" as described in <a href="https://grahamc.com/blog/nix-and-layered-docker-images/">this blog post</a>.</p>
+<p>Note this is applied on the image layers and not on layers added with the <code>buildImage.layers</code> attribute.</p>
+</body></html></div>
+  <div class="option-default">Default: <code>1</code></div>
+  <div class="option-declared">Declared in: <code><a href="file:///nix/store/qgscpgsy8pmh1xz2dxik0mvm93v4hyz9-source/nimi/container.nix" target="_blank">/nix/store/qgscpgsy8pmh1xz2dxik0mvm93v4hyz9-source/nimi/container.nix</a></code></div>
+</div>
+<div class="option" id="option-settings-container-name">
+  <h3 class="option-name">
+    <a href="#option-settings-container-name" class="option-anchor">settings.container.name</a>
+    <span class="copy-link" title="Copy link to this option"></span>
+    <span class="copy-feedback">Link copied!</span>
+  </h3>
+  <div class="option-type">Type: <code>string</code></div>
+  <div class="option-description"><html><head></head><body><p>The name of the generated image</p>
+</body></html></div>
+  <div class="option-default">Default: <code>"nimi-container"</code></div>
+  <div class="option-declared">Declared in: <code><a href="file:///nix/store/qgscpgsy8pmh1xz2dxik0mvm93v4hyz9-source/nimi/container.nix" target="_blank">/nix/store/qgscpgsy8pmh1xz2dxik0mvm93v4hyz9-source/nimi/container.nix</a></code></div>
+</div>
+<div class="option" id="option-settings-container-perms">
+  <h3 class="option-name">
+    <a href="#option-settings-container-perms" class="option-anchor">settings.container.perms</a>
+    <span class="copy-link" title="Copy link to this option"></span>
+    <span class="copy-feedback">Link copied!</span>
+  </h3>
+  <div class="option-type">Type: <code>list of (submodule)</code></div>
+  <div class="option-description"><html><head></head><body><p>A list of file permisssions which are set when the tar layer is created: these permissions are not written to the Nix store.</p>
+</body></html></div>
+  <div class="option-default">Default: <code>[ ]</code></div>
+  <div class="option-declared">Declared in: <code><a href="file:///nix/store/qgscpgsy8pmh1xz2dxik0mvm93v4hyz9-source/nimi/container.nix" target="_blank">/nix/store/qgscpgsy8pmh1xz2dxik0mvm93v4hyz9-source/nimi/container.nix</a></code></div>
+</div>
+<div class="option" id="option-settings-container-tag">
+  <h3 class="option-name">
+    <a href="#option-settings-container-tag" class="option-anchor">settings.container.tag</a>
+    <span class="copy-link" title="Copy link to this option"></span>
+    <span class="copy-feedback">Link copied!</span>
+  </h3>
+  <div class="option-type">Type: <code>null or string</code></div>
+  <div class="option-description"><html><head></head><body><p>The tag for the generated image to use</p>
+</body></html></div>
+  <div class="option-default">Default: <code>null</code></div>
+  <div class="option-declared">Declared in: <code><a href="file:///nix/store/qgscpgsy8pmh1xz2dxik0mvm93v4hyz9-source/nimi/container.nix" target="_blank">/nix/store/qgscpgsy8pmh1xz2dxik0mvm93v4hyz9-source/nimi/container.nix</a></code></div>
+</div>
 <div class="option" id="option-settings-restart">
   <h3 class="option-name">
     <a href="#option-settings-restart" class="option-anchor">settings.restart</a>
@@ -319,7 +530,7 @@ production workloads usually benefit from a bounded or always-on policy.</p>
   count = 3;
 }
 </code></pre></div>
-  <div class="option-declared">Declared in: <code><a href="file:///nix/store/d1di4133cakjql3lk2y8zc5lil94g2fq-source/nimi/restart.nix" target="_blank">/nix/store/d1di4133cakjql3lk2y8zc5lil94g2fq-source/nimi/restart.nix</a></code></div>
+  <div class="option-declared">Declared in: <code><a href="file:///nix/store/qgscpgsy8pmh1xz2dxik0mvm93v4hyz9-source/nimi/restart.nix" target="_blank">/nix/store/qgscpgsy8pmh1xz2dxik0mvm93v4hyz9-source/nimi/restart.nix</a></code></div>
 </div>
 <div class="option" id="option-settings-restart-count">
   <h3 class="option-name">
@@ -334,7 +545,7 @@ intervene or change the configuration.</p>
 </body></html></div>
   <div class="option-default">Default: <code>5</code></div>
   <div class="option-example">Example: <code>3</code></div>
-  <div class="option-declared">Declared in: <code><a href="file:///nix/store/d1di4133cakjql3lk2y8zc5lil94g2fq-source/nimi/restart.nix" target="_blank">/nix/store/d1di4133cakjql3lk2y8zc5lil94g2fq-source/nimi/restart.nix</a></code></div>
+  <div class="option-declared">Declared in: <code><a href="file:///nix/store/qgscpgsy8pmh1xz2dxik0mvm93v4hyz9-source/nimi/restart.nix" target="_blank">/nix/store/qgscpgsy8pmh1xz2dxik0mvm93v4hyz9-source/nimi/restart.nix</a></code></div>
 </div>
 <div class="option" id="option-settings-restart-mode">
   <h3 class="option-name">
@@ -356,7 +567,7 @@ more than surfacing the failure.</p>
 </body></html></div>
   <div class="option-default">Default: <code>"always"</code></div>
   <div class="option-example">Example: <code>"up-to-count"</code></div>
-  <div class="option-declared">Declared in: <code><a href="file:///nix/store/d1di4133cakjql3lk2y8zc5lil94g2fq-source/nimi/restart.nix" target="_blank">/nix/store/d1di4133cakjql3lk2y8zc5lil94g2fq-source/nimi/restart.nix</a></code></div>
+  <div class="option-declared">Declared in: <code><a href="file:///nix/store/qgscpgsy8pmh1xz2dxik0mvm93v4hyz9-source/nimi/restart.nix" target="_blank">/nix/store/qgscpgsy8pmh1xz2dxik0mvm93v4hyz9-source/nimi/restart.nix</a></code></div>
 </div>
 <div class="option" id="option-settings-restart-time">
   <h3 class="option-name">
@@ -371,7 +582,7 @@ recover resources or for dependent services to come back.</p>
 </body></html></div>
   <div class="option-default">Default: <code>10</code></div>
   <div class="option-example">Example: <code>250</code></div>
-  <div class="option-declared">Declared in: <code><a href="file:///nix/store/d1di4133cakjql3lk2y8zc5lil94g2fq-source/nimi/restart.nix" target="_blank">/nix/store/d1di4133cakjql3lk2y8zc5lil94g2fq-source/nimi/restart.nix</a></code></div>
+  <div class="option-declared">Declared in: <code><a href="file:///nix/store/qgscpgsy8pmh1xz2dxik0mvm93v4hyz9-source/nimi/restart.nix" target="_blank">/nix/store/qgscpgsy8pmh1xz2dxik0mvm93v4hyz9-source/nimi/restart.nix</a></code></div>
 </div>
 <div class="option" id="option-settings-startup">
   <h3 class="option-name">
@@ -393,7 +604,7 @@ If you do not need a startup hook, leave it unset.</p>
   runOnStartup = /nix/store/abcd1234-my-init/bin/my-init;
 }
 </code></pre></div>
-  <div class="option-declared">Declared in: <code><a href="file:///nix/store/d1di4133cakjql3lk2y8zc5lil94g2fq-source/nimi/startup.nix" target="_blank">/nix/store/d1di4133cakjql3lk2y8zc5lil94g2fq-source/nimi/startup.nix</a></code></div>
+  <div class="option-declared">Declared in: <code><a href="file:///nix/store/qgscpgsy8pmh1xz2dxik0mvm93v4hyz9-source/nimi/startup.nix" target="_blank">/nix/store/qgscpgsy8pmh1xz2dxik0mvm93v4hyz9-source/nimi/startup.nix</a></code></div>
 </div>
 <div class="option" id="option-settings-startup-runOnStartup">
   <h3 class="option-name">
@@ -421,7 +632,7 @@ a long-running process, configure it as a service instead.</p>
   }
 )
 </code></pre></div>
-  <div class="option-declared">Declared in: <code><a href="file:///nix/store/d1di4133cakjql3lk2y8zc5lil94g2fq-source/nimi/startup.nix" target="_blank">/nix/store/d1di4133cakjql3lk2y8zc5lil94g2fq-source/nimi/startup.nix</a></code></div>
+  <div class="option-declared">Declared in: <code><a href="file:///nix/store/qgscpgsy8pmh1xz2dxik0mvm93v4hyz9-source/nimi/startup.nix" target="_blank">/nix/store/qgscpgsy8pmh1xz2dxik0mvm93v4hyz9-source/nimi/startup.nix</a></code></div>
 </div>
 </div>
 
