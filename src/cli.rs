@@ -17,7 +17,7 @@ use crate::{config::Config, process_manager::ProcessManager};
 /// ## Generate a pre-configured binary from nixos modular services
 ///
 /// ```nix
-/// pkgs.nimi.evalServicesConfig {
+/// pkgs.nimi.mkNimiBin {
 ///   services."ghostunnel-plain-old" = {
 ///     imports = [ pkgs.ghostunnel.services.default ];
 ///     ghostunnel = {
@@ -55,7 +55,7 @@ use crate::{config::Config, process_manager::ProcessManager};
 pub struct Cli {
     /// Path to the json representation of nimi services to run
     ///
-    /// To generate this use the `evalServicesConfig` of the nix
+    /// To generate this use the `mkNimiBin` of the nix
     /// package for nimi
     #[arg(short, long)]
     pub config: PathBuf,

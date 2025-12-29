@@ -26,8 +26,8 @@ in
           description = ''
             The tag for the generated image to use
           '';
-          type = types.nullOr types.str;
-          default = null;
+          type = types.str;
+          default = "latest";
         };
         copyToRoot = mkOption {
           description = ''

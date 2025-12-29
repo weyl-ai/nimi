@@ -41,7 +41,12 @@ in
         };
 
         passthru = {
-          inherit (config) evalServicesConfig mkContainerImage;
+          inherit (config)
+            mkNimiBin
+            mkContainerImage
+            evalNimiModule
+            toNimiJson
+            ;
         };
       };
 

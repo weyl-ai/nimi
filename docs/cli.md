@@ -4,11 +4,11 @@ The `Nimi` CLI is the runtime entry-point for a generated modular services confi
 
 # Intended use
 
-`Nimi` is meant to be the final step after evaluating a modular services configuration with `nimi.evalServicesConfig`. It is lightweight enough for containers, but still gives you consistent startup, restart, and shutdown behavior.
+`Nimi` is meant to be the final step after evaluating a modular services configuration with `nimi.mkNimiBin`. It is lightweight enough for containers, but still gives you consistent startup, restart, and shutdown behavior.
 
 # Basic flow
 
-1. Generate a JSON config using `nimi.evalServicesConfig`.
+1. Generate a JSON config using `nimi.mkNimiBin`.
 1. Run `nimi --config ./my-config.json validate` to check it.
 1. Run `nimi --config ./my-config.json run` to launch services.
 

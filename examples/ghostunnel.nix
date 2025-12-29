@@ -4,7 +4,7 @@
   perSystem =
     { pkgs, self', ... }:
     {
-      checks.ghostunnel = self'.packages.nimi.evalServicesConfig {
+      checks.ghostunnel = self'.packages.nimi.mkNimiBin {
         services."ghostunnel-plain-old" = {
           imports = [ pkgs.ghostunnel.services.default ];
           ghostunnel = {

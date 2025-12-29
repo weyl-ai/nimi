@@ -19,7 +19,7 @@ If you are new to modular services, the upstream explanation is the best place t
 # Usage
 
 1. Define services using modular service modules.
-1. Evaluate the config with `nimi.evalServicesConfig` to produce JSON.
+1. Evaluate the config with `nimi.mkNimiBin` to produce JSON.
 1. Run `Nimi` with the generated config to launch and supervise services.
 
 # Quick-start
@@ -27,7 +27,7 @@ If you are new to modular services, the upstream explanation is the best place t
 Minimal Nix configuration:
 
 ```nix
-packages.${system}.myNimiWrapper = pkgs.nimi.evalServicesConfig {
+packages.${system}.myNimiWrapper = pkgs.nimi.mkNimiBin {
   services."my-service" = {
     imports = [ pkgs.some-application.services.default ];
     someApplication = {

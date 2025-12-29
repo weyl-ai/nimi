@@ -4,7 +4,7 @@
   perSystem =
     { pkgs, self', ... }:
     {
-      checks.startupScript = self'.packages.nimi.evalServicesConfig {
+      checks.startupScript = self'.packages.nimi.mkNimiBin {
         settings.startup.runOnStartup = lib.getExe (
           pkgs.writeShellApplication {
             name = "example-startup-script";
