@@ -28,6 +28,6 @@ jobs:
       - name: Deploy PR preview
         uses: rossjrw/pr-preview-action@v1
         with:
-          source-dir: result/share/nimi-docs
+          source-dir: result/share/nimi/docs
           preview-branch: gh-pages
           umbrella-dir: pr-preview
