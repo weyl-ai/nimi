@@ -25,7 +25,7 @@ jobs:
         uses: DeterminateSystems/nix-installer-action@main
 
       - name: Build Docs
-        run: nix build .#docs --accept-flake-config
+        run: nix build .#docs --accept-flake-config -L
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

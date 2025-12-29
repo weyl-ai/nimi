@@ -23,7 +23,7 @@ jobs:
         uses: DeterminateSystems/nix-installer-action@main
 
       - name: Build Docs
-        run: nix build .#docs --accept-flake-config
+        run: nix build .#docs --accept-flake-config -L
 
       - name: Deploy PR preview
         uses: rossjrw/pr-preview-action@v1
