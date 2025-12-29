@@ -1,0 +1,33 @@
+name: Deploy docs PR preview
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: "pages-preview-pr-${{ github.event.pull_request.number }}"
+  cancel-in-progress: true
+
+jobs:
+  preview:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@main
+
+      - name: Build Docs
+        run: nix build .#docs --accept-flake-config
+
+      - name: Deploy PR preview
+        uses: rossjrw/pr-preview-action@v1
+        with:
+          source-dir: result/share/nimi-docs
+          preview-branch: gh-pages
+          umbrella-dir: pr-preview
