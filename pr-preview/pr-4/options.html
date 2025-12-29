@@ -1,0 +1,442 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nimi Documentation - Options</title>
+     
+    <script>
+      // Apply sidebar state immediately to prevent flash
+      (function () {
+        if (localStorage.getItem("sidebar-collapsed") === "true") {
+          document.documentElement.classList.add("sidebar-collapsed");
+        }
+      })();
+    </script>
+    <link rel="stylesheet" href="assets/style.css" />
+    <script defer src="assets/main.js"></script>
+    
+    <script defer src="assets/search.js"></script>
+    
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <div class="header-left">
+          <h1 class="site-title">
+            <a href="index.html">Nimi Documentation</a>
+          </h1>
+        </div>
+        <nav class="header-nav">
+  <ul>
+    <li class="active">
+      <a href="options.html">Options</a>
+    </li>
+    
+    <li><a href="search.html">Search</a></li>
+    
+  </ul>
+</nav>
+ 
+        <div class="search-container">
+          <input type="text" id="search-input" placeholder="Search..." />
+          <div id="search-results" class="search-results"></div>
+        </div>
+        
+      </header>
+
+      <div class="layout">
+        <div class="sidebar-toggle" aria-label="Toggle sidebar">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            width="24"
+            height="24"
+          >
+            <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"></path>
+          </svg>
+        </div>
+        <nav id="sidebar" class="sidebar">
+          <details class="sidebar-section" data-section="docs" open>
+            <summary>Documents</summary>
+            <div class="sidebar-section-content">
+              <ul>
+                <li><a href="index.html">`Nimi`</a></li>
+<li><a href="cli.html">Command Line Interface</a></li>
+<li><a href="search.html">Search</a></li>
+
+              </ul>
+            </div>
+          </details>
+
+          <details class="sidebar-section" data-section="toc" open>
+            <summary>Contents</summary>
+            <div class="sidebar-section-content">
+              <ul class="toc-list">
+  
+  
+  <li>
+    <a href='#option-_module-args' title="_module.args">
+      _module.args
+      
+      
+    </a>
+  </li>
+  
+  <li>
+    <a href='#option-services' title="services">
+      services
+      
+      
+    </a>
+  </li>
+  
+
+  
+  
+  <li>
+    <details class="toc-category">
+      <summary title="settings.restart">
+        <span>settings.restart</span>
+        <span class="toc-count">4</span>
+      </summary>
+      <ul>
+        
+        <li>
+          <a href='#option-settings-restart' class="parent-option" title="settings.restart">
+            settings.restart
+            
+            
+          </a>
+        </li>
+        
+
+        
+        <li>
+          <a href='#option-settings-restart-count' title="settings.restart.count">
+            count
+            
+            
+          </a>
+        </li>
+        
+        <li>
+          <a href='#option-settings-restart-mode' title="settings.restart.mode">
+            mode
+            
+            
+          </a>
+        </li>
+        
+        <li>
+          <a href='#option-settings-restart-time' title="settings.restart.time">
+            time
+            
+            
+          </a>
+        </li>
+        
+      </ul>
+    </details>
+  </li>
+  
+  <li>
+    <details class="toc-category">
+      <summary title="settings.startup">
+        <span>settings.startup</span>
+        <span class="toc-count">2</span>
+      </summary>
+      <ul>
+        
+        <li>
+          <a href='#option-settings-startup' class="parent-option" title="settings.startup">
+            settings.startup
+            
+            
+          </a>
+        </li>
+        
+
+        
+        <li>
+          <a href='#option-settings-startup-runOnStartup' title="settings.startup.runOnStartup">
+            runOnStartup
+            
+            
+          </a>
+        </li>
+        
+      </ul>
+    </details>
+  </li>
+  
+</ul>
+
+            </div>
+          </details>
+        </nav>
+
+        <main class="content">
+          <h1>Nimi Documentation Options</h1>
+
+          
+          <div class="search-form">
+            <input
+              type="text"
+              id="options-filter"
+              placeholder="Filter options..."
+            />
+          </div>
+          
+
+          <div class="options-container"><div class="option" id="option-_module-args">
+  <h3 class="option-name">
+    <a href="#option-_module-args" class="option-anchor">_module.args</a>
+    <span class="copy-link" title="Copy link to this option"></span>
+    <span class="copy-feedback">Link copied!</span>
+  </h3>
+  <div class="option-type">Type: <code>lazy attribute set of raw value</code></div>
+  <div class="option-description"><html><head></head><body><p>Additional arguments passed to each module in addition to ones
+like <code>lib</code>, <code>config</code>,
+and <code>pkgs</code>, <code>modulesPath</code>.</p>
+<p>This option is also available to all submodules. Submodules do not
+inherit args from their parent module, nor do they provide args to
+their parent module or sibling submodules. The sole exception to
+this is the argument <code>name</code> which is provided by
+parent modules to a submodule and contains the attribute name
+the submodule is bound to, or a unique generated name if it is
+not bound to an attribute.</p>
+<p>Some arguments are already passed by default, of which the
+following <em>cannot</em> be changed with this option:</p>
+<ul>
+<li>
+<p><code class="nix-var">lib</code>: The nixpkgs library.</p>
+</li>
+<li>
+<p><code class="nix-var">config</code>: The results of all options after merging the values from all modules together.</p>
+</li>
+<li>
+<p><code class="nix-var">options</code>: The options declared in all modules.</p>
+</li>
+<li>
+<p><code class="nix-var">specialArgs</code>: The <code>specialArgs</code> argument passed to <code>evalModules</code>.</p>
+</li>
+<li>
+<p>All attributes of <code class="nix-var">specialArgs</code></p>
+<p>Whereas option values can generally depend on other option values
+thanks to laziness, this does not apply to <code>imports</code>, which
+must be computed statically before anything else.</p>
+<p>For this reason, callers of the module system can provide <code>specialArgs</code>
+which are available during import resolution.</p>
+<p>For NixOS, <code>specialArgs</code> includes
+<code class="nix-var">modulesPath</code>, which allows you to import
+extra modules from the nixpkgs package tree without having to
+somehow make the module aware of the location of the
+<code>nixpkgs</code> or NixOS directories.</p>
+<pre><code>{ modulesPath, ... }: {
+  imports = [
+    (modulesPath + "/profiles/minimal.nix")
+  ];
+}
+</code></pre>
+</li>
+</ul>
+<p>For NixOS, the default value for this option includes at least this argument:</p>
+<ul>
+<li><code class="nix-var">pkgs</code>: The nixpkgs package set according to
+the <code class="nixos-option">nixpkgs.pkgs</code> option.</li>
+</ul>
+</body></html></div>
+  <div class="option-declared">Declared in: <code><a href="https://github.com/NixOS/nixpkgs/blob/master/lib/modules.nix" target="_blank"><nixpkgs/lib/modules.nix></a></code></div>
+</div>
+<div class="option" id="option-services">
+  <h3 class="option-name">
+    <a href="#option-services" class="option-anchor">services</a>
+    <span class="copy-link" title="Copy link to this option"></span>
+    <span class="copy-feedback">Link copied!</span>
+  </h3>
+  <div class="option-type">Type: <code>lazy attribute set of (submodule)</code></div>
+  <div class="option-description"><html><head></head><body><p>Services to run inside the nimi runtime.</p>
+<p>Each attribute defines a named modular service: a reusable, composable
+module that you can import, extend, and tailor for each instance. This
+gives you clear service boundaries, easy reuse across projects, and
+a consistent way to describe how each process should run.</p>
+<p>The <code>services</code> option is an <code>lazyAttrsOf</code> submodule: the attribute name is
+the service name, and the module content defines its behavior. You
+typically provide a service by importing a module from a package and
+then overriding or extending its options.</p>
+<p>For the full upstream explanation and portability model, see the
+<a href="https://nixos.org/manual/nixos/unstable/#modular-services">NixOS manual section on Modular Services</a>.</p>
+</body></html></div>
+  <div class="option-default">Default: <code>{ }</code></div>
+  <div class="option-example">Example: <pre><code>{
+  services."ghostunnel-plain-old" = {
+    imports = [ pkgs.ghostunnel.services.default ];
+    ghostunnel = {
+      listen = "0.0.0.0:443";
+      cert = "/root/service-cert.pem";
+      key = "/root/service-key.pem";
+      disableAuthentication = true;
+      target = "backend:80";
+      unsafeTarget = true;
+    };
+  };
+  services."ghostunnel-client-cert" = {
+    imports = [ pkgs.ghostunnel.services.default ];
+    ghostunnel = {
+      listen = "0.0.0.0:1443";
+      cert = "/root/service-cert.pem";
+      key = "/root/service-key.pem";
+      cacert = "/root/ca.pem";
+      target = "backend:80";
+      allowCN = [ "client" ];
+      unsafeTarget = true;
+    };
+  };
+}
+</code></pre></div>
+  <div class="option-declared">Declared in: <code>services</code></div>
+</div>
+<div class="option" id="option-settings-restart">
+  <h3 class="option-name">
+    <a href="#option-settings-restart" class="option-anchor">settings.restart</a>
+    <span class="copy-link" title="Copy link to this option"></span>
+    <span class="copy-feedback">Link copied!</span>
+  </h3>
+  <div class="option-type">Type: <code>submodule</code></div>
+  <div class="option-description"><html><head></head><body><p>Restart policy for the nimi process manager.</p>
+<p>Use this to control if and how services are restarted after they exit.
+This is the main safety net for keeping long-running services alive, and
+also a guardrail to prevent tight restart loops from burning CPU.</p>
+<p>You can choose a policy that matches the reliability needs of each
+deployment. For development you might disable restarts entirely, while
+production workloads usually benefit from a bounded or always-on policy.</p>
+</body></html></div>
+  <div class="option-default">Default: <code>{ }</code></div>
+  <div class="option-example">Example: <pre><code>{
+  mode = "up-to-count";
+  time = 500;
+  count = 3;
+}
+</code></pre></div>
+  <div class="option-declared">Declared in: <code><a href="file:///nix/store/cvs4spmx3vrjsq1qkvp575bxj2vzygd7-source/nimi/restart.nix" target="_blank">/nix/store/cvs4spmx3vrjsq1qkvp575bxj2vzygd7-source/nimi/restart.nix</a></code></div>
+</div>
+<div class="option" id="option-settings-restart-count">
+  <h3 class="option-name">
+    <a href="#option-settings-restart-count" class="option-anchor">settings.restart.count</a>
+    <span class="copy-link" title="Copy link to this option"></span>
+    <span class="copy-feedback">Link copied!</span>
+  </h3>
+  <div class="option-type">Type: <code>positive integer, meaning >0</code></div>
+  <div class="option-description"><html><head></head><body><p>Maximum number of restart attempts when <code>mode</code> is <code>up-to-count</code>.</p>
+<p>Once this limit is reached, the service is left stopped until you
+intervene or change the configuration.</p>
+</body></html></div>
+  <div class="option-default">Default: <code>5</code></div>
+  <div class="option-example">Example: <code>3</code></div>
+  <div class="option-declared">Declared in: <code><a href="file:///nix/store/cvs4spmx3vrjsq1qkvp575bxj2vzygd7-source/nimi/restart.nix" target="_blank">/nix/store/cvs4spmx3vrjsq1qkvp575bxj2vzygd7-source/nimi/restart.nix</a></code></div>
+</div>
+<div class="option" id="option-settings-restart-mode">
+  <h3 class="option-name">
+    <a href="#option-settings-restart-mode" class="option-anchor">settings.restart.mode</a>
+    <span class="copy-link" title="Copy link to this option"></span>
+    <span class="copy-feedback">Link copied!</span>
+  </h3>
+  <div class="option-type">Type: <code>one of "never", "up-to-count", "always"</code></div>
+  <div class="option-description"><html><head></head><body><p>Selects the restart behavior.</p>
+<ul>
+<li><code>never</code>: do not restart failed services.</li>
+<li><code>up-to-count</code>: restart up to <code>count</code> times, then stop.</li>
+<li><code>always</code>: always restart on failure.</li>
+</ul>
+<p>Choose <code>up-to-count</code> if you want a service to get a few retries
+during a transient failure, but still fail fast when the issue is
+persistent. Choose <code>always</code> when continuous availability matters
+more than surfacing the failure.</p>
+</body></html></div>
+  <div class="option-default">Default: <code>"always"</code></div>
+  <div class="option-example">Example: <code>"up-to-count"</code></div>
+  <div class="option-declared">Declared in: <code><a href="file:///nix/store/cvs4spmx3vrjsq1qkvp575bxj2vzygd7-source/nimi/restart.nix" target="_blank">/nix/store/cvs4spmx3vrjsq1qkvp575bxj2vzygd7-source/nimi/restart.nix</a></code></div>
+</div>
+<div class="option" id="option-settings-restart-time">
+  <h3 class="option-name">
+    <a href="#option-settings-restart-time" class="option-anchor">settings.restart.time</a>
+    <span class="copy-link" title="Copy link to this option"></span>
+    <span class="copy-feedback">Link copied!</span>
+  </h3>
+  <div class="option-type">Type: <code>positive integer, meaning >0</code></div>
+  <div class="option-description"><html><head></head><body><p>Delay between restarts in milliseconds.</p>
+<p>Increase this value for crash loops to give the system time to
+recover resources or for dependent services to come back.</p>
+</body></html></div>
+  <div class="option-default">Default: <code>10</code></div>
+  <div class="option-example">Example: <code>250</code></div>
+  <div class="option-declared">Declared in: <code><a href="file:///nix/store/cvs4spmx3vrjsq1qkvp575bxj2vzygd7-source/nimi/restart.nix" target="_blank">/nix/store/cvs4spmx3vrjsq1qkvp575bxj2vzygd7-source/nimi/restart.nix</a></code></div>
+</div>
+<div class="option" id="option-settings-startup">
+  <h3 class="option-name">
+    <a href="#option-settings-startup" class="option-anchor">settings.startup</a>
+    <span class="copy-link" title="Copy link to this option"></span>
+    <span class="copy-feedback">Link copied!</span>
+  </h3>
+  <div class="option-type">Type: <code>submodule</code></div>
+  <div class="option-description"><html><head></head><body><p>Startup behavior for the nimi process manager.</p>
+<p>This section lets you run a one-time initialization command before any
+configured services are started. It is useful for bootstrapping state,
+preparing directories, or running a short setup task that should happen
+once per process manager start.</p>
+<p>The command is executed once and then the normal service startup proceeds.
+If you do not need a startup hook, leave it unset.</p>
+</body></html></div>
+  <div class="option-default">Default: <code>{ }</code></div>
+  <div class="option-example">Example: <pre><code>{
+  runOnStartup = /nix/store/abcd1234-my-init/bin/my-init;
+}
+</code></pre></div>
+  <div class="option-declared">Declared in: <code><a href="file:///nix/store/cvs4spmx3vrjsq1qkvp575bxj2vzygd7-source/nimi/startup.nix" target="_blank">/nix/store/cvs4spmx3vrjsq1qkvp575bxj2vzygd7-source/nimi/startup.nix</a></code></div>
+</div>
+<div class="option" id="option-settings-startup-runOnStartup">
+  <h3 class="option-name">
+    <a href="#option-settings-startup-runOnStartup" class="option-anchor">settings.startup.runOnStartup</a>
+    <span class="copy-link" title="Copy link to this option"></span>
+    <span class="copy-feedback">Link copied!</span>
+  </h3>
+  <div class="option-type">Type: <code>null or path in the Nix store</code></div>
+  <div class="option-description"><html><head></head><body><p>Path to a binary to run once at startup.</p>
+<p>This should be a single executable in the Nix store, not a shell
+snippet. Use <code>lib.getExe</code> to turn a package or derivation into a
+runnable path.</p>
+<p>The command runs before services start, so it is a good place to
+create files, check preconditions, or populate caches. If you need
+a long-running process, configure it as a service instead.</p>
+<p>Set to <code>null</code> to disable.</p>
+</body></html></div>
+  <div class="option-default">Default: <code>null</code></div>
+  <div class="option-example">Example: <pre><code>lib.getExe (
+  pkgs.writeShellApplication {
+    name = "example-startup-script";
+    text = ''
+      echo "hello world"
+    '';
+  }
+)
+</code></pre></div>
+  <div class="option-declared">Declared in: <code><a href="file:///nix/store/cvs4spmx3vrjsq1qkvp575bxj2vzygd7-source/nimi/startup.nix" target="_blank">/nix/store/cvs4spmx3vrjsq1qkvp575bxj2vzygd7-source/nimi/startup.nix</a></code></div>
+</div>
+</div>
+
+          <div class="footnotes-container">
+            <!-- Footnotes will be appended here -->
+          </div>
+        </main>
+      </div>
+
+      <footer>
+  <p>Generated with ndg</p>
+</footer>
+
+    </div>
+
+    
+  </body>
+</html>

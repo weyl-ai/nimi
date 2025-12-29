@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Command Line Interface</title>
+     
+    <script>
+      // Apply sidebar state immediately to prevent flash
+      (function () {
+        if (localStorage.getItem("sidebar-collapsed") === "true") {
+          document.documentElement.classList.add("sidebar-collapsed");
+        }
+      })();
+    </script>
+    <link rel="stylesheet" href="assets/style.css" />
+    <script defer src="assets/main.js"></script>
+    
+    <script>
+      window.searchNamespace = window.searchNamespace || {};
+      window.searchNamespace.rootPath = "";
+    </script>
+    <script defer src="assets/search.js"></script>
+    
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <div class="header-left">
+          <h1 class="site-title">
+            <a href="index.html">Nimi Documentation</a>
+          </h1>
+
+          <nav class="header-nav">
+  <ul>
+    <li >
+      <a href="options.html">Options</a>
+    </li>
+    
+    <li><a href="search.html">Search</a></li>
+    
+  </ul>
+</nav>
+
+        </div>
+        
+        <div class="search-container">
+          <input type="text" id="search-input" placeholder="Search..." />
+          <div id="search-results" class="search-results"></div>
+        </div>
+        
+      </header>
+
+      <div class="layout">
+        <div class="sidebar-toggle" aria-label="Toggle sidebar">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            width="24"
+            height="24"
+          >
+            <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"></path>
+          </svg>
+        </div>
+        <nav class="sidebar">
+          <details class="sidebar-section" data-section="docs" open>
+            <summary>Documents</summary>
+            <div class="sidebar-section-content">
+              <ul>
+                <li><a href="index.html">`Nimi`</a></li>
+<li><a href="cli.html">Command Line Interface</a></li>
+<li><a href="search.html">Search</a></li>
+
+              </ul>
+            </div>
+          </details>
+
+          <details class="sidebar-section" data-section="toc" open>
+            <summary>Contents</summary>
+            <div class="sidebar-section-content">
+              <ul class="toc-list">
+                <li><a href="#command-line-interface">Command Line Interface</a>
+<li><a href="#intended-use">Intended use</a>
+<li><a href="#basic-flow">Basic flow</a>
+<li><a href="#commands">Commands</a>
+<li><a href="#flags">Flags</a>
+<li><a href="#runtime-behavior">Runtime behavior</a>
+<li><a href="#example">Example</a>
+</li>
+              </ul>
+            </div>
+          </details>
+        </nav>
+
+        <main class="content"><html><head></head><body><h1 id="command-line-interface">Command Line Interface</h1>
+<p>The <code>Nimi</code> CLI is the runtime entry-point for a generated modular services config. It validates the config, runs startup hooks, launches services, and streams their logs until shutdown.</p>
+<h1 id="intended-use">Intended use</h1>
+<p><code>Nimi</code> is meant to be the final step after evaluating a modular services configuration with <code>nimi.evalServicesConfig</code>. It is lightweight enough for containers, but still gives you consistent startup, restart, and shutdown behavior.</p>
+<h1 id="basic-flow">Basic flow</h1>
+<ol>
+<li>Generate a JSON config using <code>nimi.evalServicesConfig</code>.</li>
+<li>Run <code>nimi --config ./my-config.json validate</code> to check it.</li>
+<li>Run <code>nimi --config ./my-config.json run</code> to launch services.</li>
+</ol>
+<h1 id="commands">Commands</h1>
+<ul>
+<li><code>validate</code>: read and deserialize the config to ensure it is well-formed.</li>
+<li><code>run</code>: start the process manager and run all configured services.</li>
+</ul>
+<h1 id="flags">Flags</h1>
+<ul>
+<li><code>--config</code>, <code>-c</code>: path to the generated JSON configuration file.</li>
+</ul>
+<h1 id="runtime-behavior">Runtime behavior</h1>
+<ul>
+<li>Optional startup binary runs once before services start.</li>
+<li>Each service runs with a clean environment and its configured <code>argv</code>.</li>
+<li>Service logs stream to stdout/stderr with the service name as the log target.</li>
+<li>Restart behavior follows <code>settings.restart</code> (<code>never</code>, <code>up-to-count</code>, <code>always</code>).</li>
+<li><code>Ctrl-C</code> triggers a graceful shutdown and waits for services to exit.</li>
+</ul>
+<h1 id="example">Example</h1>
+<pre class="highlight"><code class="language-bash"><span style="color:rgb(97,175,239);">nimi</span>&nbsp;<span style="color:rgb(232,102,113);">--config</span>&nbsp;<span style="color:rgb(232,102,113);">./result/nimi-config.json</span>&nbsp;<span style="color:rgb(232,102,113);">validate</span><br><span style="color:rgb(97,175,239);">nimi</span>&nbsp;<span style="color:rgb(232,102,113);">--config</span>&nbsp;<span style="color:rgb(232,102,113);">./result/nimi-config.json</span>&nbsp;<span style="color:rgb(232,102,113);">run</span><br></code></pre>
+</body></html></main>
+      </div>
+
+      <aside class="page-toc">
+        <nav class="page-toc-nav">
+          <h3>On this page</h3>
+          <ul class="page-toc-list">
+            <li><a href="#command-line-interface">Command Line Interface</a>
+<li><a href="#intended-use">Intended use</a>
+<li><a href="#basic-flow">Basic flow</a>
+<li><a href="#commands">Commands</a>
+<li><a href="#flags">Flags</a>
+<li><a href="#runtime-behavior">Runtime behavior</a>
+<li><a href="#example">Example</a>
+</li>
+          </ul>
+        </nav>
+      </aside>
+
+      <footer>
+  <p>Generated with ndg</p>
+</footer>
+
+    </div>
+
+    
+  </body>
+</html>
