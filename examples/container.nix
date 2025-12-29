@@ -1,5 +1,3 @@
-# This package seems to be used as the testbed for development of Modular Services in `nixpkgs`
-
 {
   perSystem =
     { pkgs, self', ... }:
