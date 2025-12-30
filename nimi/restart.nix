@@ -53,7 +53,7 @@ in
             recover resources or for dependent services to come back.
           '';
           type = types.ints.positive;
-          default = 10;
+          default = 1000;
           example = lib.literalExpression "250";
         };
         count = mkOption {

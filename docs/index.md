@@ -36,7 +36,7 @@ packages.${system}.myNimiWrapper = pkgs.nimi.mkNimiBin {
     };
   };
   settings.restart.mode = "up-to-count";
-  settings.restart.time = 1000;
+  settings.restart.time = 2000;
 }
 ```
 
