@@ -1,4 +1,8 @@
+use serde_with::DurationMilliSeconds;
+use std::time::Duration;
+
 use serde::{Deserialize, Serialize};
+use serde_with::serde_as;
 
 /// Settings Struct
 ///
@@ -25,10 +29,12 @@ pub struct Startup {
 /// Restart Settings Struct
 ///
 /// Configuration for how nimi gets restarted
+#[serde_as]
 #[derive(Debug, Default, Serialize, Deserialize)]
 pub struct Restart {
     pub mode: RestartMode,
-    pub time: usize,
+    #[serde_as(as = "DurationMilliSeconds<u64>")]
+    pub time: Duration,
     pub count: usize,
 }
 

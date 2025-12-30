@@ -5,16 +5,17 @@
 
 use eyre::{Context, Result};
 use log::{debug, error, info};
-use std::{collections::HashMap, sync::Arc, time::Duration};
+use std::{collections::HashMap, sync::Arc};
 use tokio::{process::Command, sync::broadcast};
 
 mod service;
+mod service_manager;
 mod settings;
 
 pub use service::Service;
 pub use settings::Settings;
 
-use crate::process_manager::settings::RestartMode;
+use crate::process_manager::service_manager::ServiceManager;
 
 /// Process Manager Struct
 ///
@@ -28,59 +29,6 @@ impl ProcessManager {
     /// Create a new process manager instance
     pub fn new(services: HashMap<String, Service>, settings: Settings) -> Self {
         Self { services, settings }
-    }
-
-    async fn run_process(
-        settings: Arc<Settings>,
-        name: &str,
-        service: Service,
-        mut shutdown_rx: broadcast::Receiver<()>,
-    ) -> Result<()> {
-        let mut current_count = 0;
-        let sleep_time = Duration::from_millis(settings.restart.time as u64);
-
-        loop {
-            let Err(e) = service.run(name, &mut shutdown_rx).await else {
-                return Ok(());
-            };
-
-            error!(target: name, "{}", e);
-
-            match settings.restart.mode {
-                RestartMode::Always => {
-                    info!("Process {} exited, restarting (mode: always)", &name);
-                }
-                RestartMode::UpToCount => {
-                    if current_count >= settings.restart.count {
-                        info!(
-                            "Process {} exited, not restarting (mode: up-to-count {}/{})",
-                            &name, current_count, settings.restart.count
-                        );
-                        return Ok(());
-                    }
-
-                    current_count += 1;
-
-                    info!(
-                        "Process {} exited, restarting (mode: up-to-count {}/{})",
-                        &name, current_count, settings.restart.count
-                    );
-                }
-                RestartMode::Never => {
-                    info!("Process {} exited, not restarting (mode: never)", &name,);
-
-                    return Ok(());
-                }
-            }
-
-            tokio::select! {
-                _ = tokio::time::sleep(sleep_time) => {},
-                _ = shutdown_rx.recv() => {
-                    info!("Received shutdown during restart delay for {}", name);
-                    return Ok(());
-                }
-            }
-        }
     }
 
     async fn run_startup_process(bin: &str) -> Result<()> {
@@ -120,8 +68,11 @@ impl ProcessManager {
         for (name, service) in self.services {
             let shutdown_rx = shutdown_tx.subscribe();
             let settings = Arc::clone(&settings);
+
             join_set.spawn(async move {
-                Self::run_process(settings, &name, service, shutdown_rx).await
+                ServiceManager::new(settings, &name, service, shutdown_rx)
+                    .run()
+                    .await
             });
         }
 
