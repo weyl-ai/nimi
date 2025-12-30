@@ -19,42 +19,58 @@ use tokio_util::sync::CancellationToken;
 use crate::process_manager::{Service, Settings, settings::RestartMode};
 
 /// Responsible for the running of and managing of service state
-pub struct ServiceManager<'a> {
+pub struct ServiceManager {
     settings: Arc<Settings>,
     cancel_tok: CancellationToken,
 
-    name: &'a str,
+    name: Arc<String>,
     service: Service,
 
     current_restart_count: usize,
 
     config_dir: ConfigDir,
+    logs_dir: Arc<PathBuf>,
 }
 
-impl<'a> ServiceManager<'a> {
+/// Used to initialize the Service Manager in a structured manner
+pub struct ServiceManagerOpts {
+    /// Directory to store logs in
+    pub logs_dir: Arc<PathBuf>,
+    /// Temporary directory
+    pub tmp_dir: Arc<PathBuf>,
+
+    /// Process manager settings
+    pub settings: Arc<Settings>,
+
+    /// Service name
+    pub name: Arc<String>,
+
+    /// Service config
+    pub service: Service,
+
+    /// Cancellation token
+    pub cancel_tok: CancellationToken,
+}
+
+impl ServiceManager {
     /// Creates a new Service Manager
     ///
     /// This creates the corresponding processes and supervises the operation for a given
     /// `Service`.
     ///
     /// This also produces a `ConfigDir` instance per service.
-    pub async fn new(
-        tmp_dir: Arc<PathBuf>,
-        settings: Arc<Settings>,
-        name: &'a str,
-        service: Service,
-        cancel_tok: CancellationToken,
-    ) -> Result<Self> {
+    pub async fn new(opts: ServiceManagerOpts) -> Result<Self> {
         Ok(Self {
-            config_dir: ConfigDir::new(&tmp_dir, &service.config_data).await?,
+            config_dir: ConfigDir::new(&opts.tmp_dir, &opts.service.config_data).await?,
 
-            settings,
-            cancel_tok,
+            settings: opts.settings,
+            cancel_tok: opts.cancel_tok,
 
-            name,
-            service,
+            name: opts.name,
+            service: opts.service,
 
             current_restart_count: 0,
+            logs_dir: opts.logs_dir,
         })
     }
 
@@ -113,12 +129,20 @@ impl<'a> ServiceManager<'a> {
     pub async fn spawn_service_process(&mut self) -> Result<()> {
         let mut process = self.create_service_child().await?;
 
-        Logger::Stdout.start(Arc::from(self.name), &mut process.stdout)?;
-        Logger::Stderr.start(Arc::from(self.name), &mut process.stderr)?;
+        Logger::Stdout.start(
+            &mut process.stdout,
+            Arc::clone(&self.name),
+            Arc::clone(&self.logs_dir),
+        )?;
+        Logger::Stderr.start(
+            &mut process.stderr,
+            Arc::clone(&self.name),
+            Arc::clone(&self.logs_dir),
+        )?;
 
         tokio::select! {
             _ = self.cancel_tok.cancelled() => {
-                debug!(target: self.name, "Received shutdown signal");
+                debug!(target: &self.name, "Received shutdown signal");
                 process.kill().await.wrap_err("Failed to kill service process")?;
                 return Ok(());
             }

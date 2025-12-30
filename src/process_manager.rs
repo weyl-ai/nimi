@@ -5,8 +5,8 @@
 
 use eyre::{Context, Result};
 use log::{debug, error, info};
-use std::{collections::HashMap, env, sync::Arc};
-use tokio::{process::Command, task::JoinSet};
+use std::{collections::HashMap, env, io::ErrorKind, path::PathBuf, sync::Arc};
+use tokio::{fs, process::Command, task::JoinSet};
 use tokio_util::sync::CancellationToken;
 
 pub mod service;
@@ -16,6 +16,8 @@ pub mod settings;
 pub use service::Service;
 pub use service_manager::ServiceManager;
 pub use settings::Settings;
+
+use crate::process_manager::service_manager::ServiceManagerOpts;
 
 /// Process Manager Struct
 ///
@@ -48,31 +50,52 @@ impl ProcessManager {
         Ok(())
     }
 
+    /// Create logs dir
+    ///
+    /// Creates the logs directory for the process manager
+    /// to have it's services create textual log files in
+    pub async fn create_logs_dir(settings: &Settings) -> Result<PathBuf> {
+        let cwd = env::current_dir()?;
+
+        let target = cwd.join(&settings.logging.logs_dir);
+
+        if !settings.logging.enable_log_files {
+            return Ok(target);
+        }
+
+        match fs::create_dir(&target).await {
+            Ok(()) => Ok(target),
+            Err(e) if e.kind() == ErrorKind::AlreadyExists => Ok(target),
+            Err(e) => Err(e).wrap_err("Failed to create logs dir"),
+        }
+    }
+
     /// Spawn Child Processes
     ///
     /// Spawns every service this process manager manages into a `JoinSet`
-    pub fn spawn_child_processes(
+    pub async fn spawn_child_processes(
         self,
         cancel_tok: &CancellationToken,
     ) -> Result<JoinSet<Result<()>>> {
         let mut join_set = tokio::task::JoinSet::new();
 
         let settings = Arc::new(self.settings);
+        let logs_dir = Arc::new(Self::create_logs_dir(&settings).await?);
         let tmp_dir = Arc::new(env::temp_dir());
 
         for (name, service) in self.services {
-            let cancel_tok = cancel_tok.clone();
+            let opts = ServiceManagerOpts {
+                logs_dir: Arc::clone(&logs_dir),
+                tmp_dir: Arc::clone(&tmp_dir),
 
-            let settings = Arc::clone(&settings);
-            let tmp_dir = Arc::clone(&tmp_dir);
+                settings: Arc::clone(&settings),
 
-            join_set.spawn(async move {
-                ServiceManager::new(tmp_dir, settings, &name, service, cancel_tok)
-                    .await?
-                    .run()
-                    .await
-                    .wrap_err_with(|| format!("Process {} had an error", name))
-            });
+                name: Arc::new(name),
+                service,
+                cancel_tok: cancel_tok.clone(),
+            };
+
+            join_set.spawn(async move { ServiceManager::new(opts).await?.run().await });
         }
 
         Ok(join_set)
@@ -101,7 +124,7 @@ impl ProcessManager {
         let cancel_tok = CancellationToken::new();
         self.spawn_shutdown_task(&cancel_tok);
 
-        let mut services_set = self.spawn_child_processes(&cancel_tok)?;
+        let mut services_set = self.spawn_child_processes(&cancel_tok).await?;
 
         while let Some(res) = services_set.join_next().await {
             let flat: Result<()> = res.map_err(Into::into).and_then(std::convert::identity);

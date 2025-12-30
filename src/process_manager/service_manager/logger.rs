@@ -2,11 +2,14 @@
 //!
 //! Reads the logs from the sub processes and prints them from the `Nimi` instance
 
-use std::sync::Arc;
+use std::{path::PathBuf, sync::Arc};
 
 use eyre::{Context, ContextCompat, Result};
 use log::{debug, error};
-use tokio::io::{AsyncBufReadExt, AsyncRead, BufReader, Lines};
+use tokio::{
+    fs::File,
+    io::{AsyncBufReadExt, AsyncRead, AsyncWriteExt, BufReader, BufWriter, Lines},
+};
 
 /// Logger type
 ///
@@ -21,7 +24,12 @@ pub enum Logger {
 
 impl Logger {
     /// Start a logger for a given file descriptor
-    pub fn start<D>(self, target: Arc<str>, fd: &mut Option<D>) -> Result<()>
+    pub fn start<D>(
+        self,
+        fd: &mut Option<D>,
+        target: Arc<String>,
+        logs_dir: Arc<PathBuf>,
+    ) -> Result<()>
     where
         D: AsyncRead + Unpin + Send + 'static,
     {
@@ -29,17 +37,45 @@ impl Logger {
             .wrap_err("Failed to acquire lines reader for stdout logger")?;
 
         tokio::spawn(async move {
+            let mut logs_file = Self::create_logs_file(logs_dir, &target).await?;
+
             loop {
                 match reader.next_line().await {
-                    Ok(Some(line)) => self.log_line(&target, &line),
+                    Ok(Some(line)) => {
+                        self.log_line(&target, &line);
+                        Self::write_log_file_line(&mut logs_file, &line).await?;
+                    }
                     Ok(None) => break,
                     Err(e) => {
                         error!(target: &target, "{}", e);
+                        Self::write_log_file_line(&mut logs_file, e.to_string().as_str()).await?;
                         break;
                     }
                 }
             }
+
+            Ok::<_, eyre::Report>(())
         });
+
+        Ok(())
+    }
+
+    async fn create_logs_file(
+        logs_dir: Arc<PathBuf>,
+        target: &Arc<String>,
+    ) -> Result<BufWriter<File>> {
+        let logs_path = logs_dir.join(format!("{}.txt", &target));
+
+        let file = File::create_new(logs_path)
+            .await
+            .wrap_err_with(|| format!("Failed to create logs file for {}", &target))?;
+
+        Ok(BufWriter::new(file))
+    }
+
+    async fn write_log_file_line(writer: &mut BufWriter<File>, line: &str) -> Result<()> {
+        writer.write_all(line.as_bytes()).await?;
+        writer.write_all(b"\n").await?;
 
         Ok(())
     }
