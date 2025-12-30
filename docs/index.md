@@ -53,6 +53,7 @@ nix run .#myNimiWrapper
 - `settings.restart`: choose `never`, `up-to-count`, or `always`, and tune delay
   and retry count.
 - `settings.startup`: optionally run one binary before services start.
+- `configData`: define per-service config files; see `docs/config-data.md`.
 
 # Next steps
 
