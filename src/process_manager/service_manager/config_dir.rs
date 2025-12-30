@@ -4,7 +4,11 @@
 
 use eyre::{Context, Result};
 use sha2::{Digest, Sha256};
-use std::{ffi::OsStr, io::ErrorKind, path::PathBuf};
+use std::{
+    ffi::OsStr,
+    io::ErrorKind,
+    path::{Path, PathBuf},
+};
 use tokio::fs;
 
 use crate::process_manager::service::ConfigDataMap;
@@ -20,7 +24,7 @@ impl ConfigDir {
     ///
     /// Writes the configuration to disk inside the passed tempdir with
     /// the configured files
-    pub async fn new(tmp_dir: PathBuf, config_data: &ConfigDataMap) -> Result<Self> {
+    pub async fn new(tmp_dir: &Path, config_data: &ConfigDataMap) -> Result<Self> {
         let dir_name = Self::generate_config_directory_name(config_data)
             .wrap_err("Failed to generate config directory name")?;
 

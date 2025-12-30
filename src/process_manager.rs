@@ -61,15 +61,17 @@ impl ProcessManager {
         let (shutdown_tx, _) = broadcast::channel::<()>(1);
 
         let settings = Arc::new(self.settings);
+        let tmp_dir = Arc::new(env::temp_dir());
 
         let mut join_set = tokio::task::JoinSet::new();
 
         for (name, service) in self.services {
             let shutdown_rx = shutdown_tx.subscribe();
             let settings = Arc::clone(&settings);
+            let tmp_dir = Arc::clone(&tmp_dir);
 
             join_set.spawn(async move {
-                ServiceManager::new(env::temp_dir(), settings, &name, service, shutdown_rx)
+                ServiceManager::new(tmp_dir, settings, &name, service, shutdown_rx)
                     .await?
                     .run()
                     .await

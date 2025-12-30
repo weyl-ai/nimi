@@ -41,14 +41,14 @@ impl<'a> ServiceManager<'a> {
     ///
     /// This also produces a `ConfigDir` instance per service.
     pub async fn new(
-        tmp_dir: PathBuf,
+        tmp_dir: Arc<PathBuf>,
         settings: Arc<Settings>,
         name: &'a str,
         service: Service,
         shutdown_rx: broadcast::Receiver<()>,
     ) -> Result<Self> {
         Ok(Self {
-            config_dir: ConfigDir::new(tmp_dir, &service.config_data).await?,
+            config_dir: ConfigDir::new(&tmp_dir, &service.config_data).await?,
 
             settings,
             shutdown_rx,
