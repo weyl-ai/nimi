@@ -38,6 +38,8 @@
         fi
 
         echo "Successfully found '${testString}' ${toString (N + 1)} times"
+        echo "${lib.getExe nimiWrapper} &> nimi_logs.txt"
+        cat nimi_logs.txt
         mkdir "$out"
       '';
     };

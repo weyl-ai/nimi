@@ -28,7 +28,7 @@ impl Logger {
         self,
         fd: &mut Option<D>,
         target: Arc<String>,
-        logs_dir: Arc<PathBuf>,
+        logs_dir: Arc<Option<PathBuf>>,
     ) -> Result<()>
     where
         D: AsyncRead + Unpin + Send + 'static,
@@ -61,19 +61,27 @@ impl Logger {
     }
 
     async fn create_logs_file(
-        logs_dir: Arc<PathBuf>,
+        logs_dir: Arc<Option<PathBuf>>,
         target: &Arc<String>,
-    ) -> Result<BufWriter<File>> {
+    ) -> Result<Option<BufWriter<File>>> {
+        let Some(ref logs_dir) = *logs_dir else {
+            return Ok(None);
+        };
+
         let logs_path = logs_dir.join(format!("{}.txt", &target));
 
         let file = File::create_new(logs_path)
             .await
             .wrap_err_with(|| format!("Failed to create logs file for {}", &target))?;
 
-        Ok(BufWriter::new(file))
+        Ok(Some(BufWriter::new(file)))
     }
 
-    async fn write_log_file_line(writer: &mut BufWriter<File>, line: &str) -> Result<()> {
+    async fn write_log_file_line(writer: &mut Option<BufWriter<File>>, line: &str) -> Result<()> {
+        let Some(writer) = writer else {
+            return Ok(());
+        };
+
         writer.write_all(line.as_bytes()).await?;
         writer.write_all(b"\n").await?;
 

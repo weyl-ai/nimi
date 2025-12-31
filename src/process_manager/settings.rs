@@ -5,7 +5,7 @@
 use serde_with::DurationMilliSeconds;
 use std::time::Duration;
 
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize};
 use serde_with::serde_as;
 
 /// Settings Struct
@@ -36,11 +36,34 @@ pub struct Startup {
 /// Logging Settings Struct
 ///
 /// Configuration for how nimi prints logs
-#[derive(Debug, Default, Serialize, Deserialize)]
+#[derive(Debug, Default, Serialize)]
 pub struct Logging {
+    /// The stringified path to the logs directory to use
+    ///
+    /// None if logs are disabled
+    pub logs_dir: Option<String>,
+}
+
+impl<'de> Deserialize<'de> for Logging {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let raw = LoggingRaw::deserialize(deserializer)?;
+
+        Ok(Logging {
+            logs_dir: raw.enable.then_some(raw.logs_dir),
+        })
+    }
+}
+
+/// Logging raw struct matching nix representation
+///
+/// Configuration for how nimi prints logs
+#[derive(Debug, Default, Serialize, Deserialize)]
+struct LoggingRaw {
     /// If log files should be generated for the service
-    #[serde(rename = "enableLogFiles")]
-    pub enable_log_files: bool,
+    pub enable: bool,
 
     /// The stringified path to the logs directory to use
     #[serde(rename = "logsDir")]

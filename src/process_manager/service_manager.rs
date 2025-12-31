@@ -29,13 +29,13 @@ pub struct ServiceManager {
     current_restart_count: usize,
 
     config_dir: ConfigDir,
-    logs_dir: Arc<PathBuf>,
+    logs_dir: Arc<Option<PathBuf>>,
 }
 
 /// Used to initialize the Service Manager in a structured manner
 pub struct ServiceManagerOpts {
     /// Directory to store logs in
-    pub logs_dir: Arc<PathBuf>,
+    pub logs_dir: Arc<Option<PathBuf>>,
     /// Temporary directory
     pub tmp_dir: Arc<PathBuf>,
 

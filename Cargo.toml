@@ -4,6 +4,7 @@ color-eyre = "0.6.5"
 env_logger = "0.11.8"
 eyre = "0.6.12"
 format_serde_error = "0.3.0"
+futures = "0.3.31"
 log = "0.4.29"
 serde = {version = "1.0.228", features = ["serde_derive"]}
 serde_json = "1.0.148"

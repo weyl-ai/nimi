@@ -4,6 +4,7 @@
 //! and runs them streaming logs back to the original console.
 
 use eyre::{Context, Result};
+use futures::future::OptionFuture;
 use log::{debug, error, info};
 use std::{collections::HashMap, env, io::ErrorKind, path::PathBuf, sync::Arc};
 use tokio::{fs, process::Command, task::JoinSet};
@@ -54,14 +55,10 @@ impl ProcessManager {
     ///
     /// Creates the logs directory for the process manager
     /// to have it's services create textual log files in
-    pub async fn create_logs_dir(settings: &Settings) -> Result<PathBuf> {
+    pub async fn create_logs_dir(logs_path: &str) -> Result<PathBuf> {
         let cwd = env::current_dir()?;
 
-        let target = cwd.join(&settings.logging.logs_dir);
-
-        if !settings.logging.enable_log_files {
-            return Ok(target);
-        }
+        let target = cwd.join(logs_path);
 
         match fs::create_dir(&target).await {
             Ok(()) => Ok(target),
@@ -80,7 +77,17 @@ impl ProcessManager {
         let mut join_set = tokio::task::JoinSet::new();
 
         let settings = Arc::new(self.settings);
-        let logs_dir = Arc::new(Self::create_logs_dir(&settings).await?);
+        let logs_dir = Arc::new(
+            OptionFuture::from(
+                settings
+                    .logging
+                    .logs_dir
+                    .as_deref()
+                    .map(Self::create_logs_dir),
+            )
+            .await
+            .transpose()?,
+        );
         let tmp_dir = Arc::new(env::temp_dir());
 
         for (name, service) in self.services {

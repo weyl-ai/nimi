@@ -1,6 +1,6 @@
 { lib, ... }:
 let
-  inherit (lib) mkOption types;
+  inherit (lib) mkOption mkEnableOption types;
 in
 {
   options.settings.logging = mkOption {
@@ -11,13 +11,9 @@ in
     '';
     type = types.submodule {
       options = {
-        enableLogFiles = mkOption {
-          description = ''
-            If files for each services' logs should be written to `settings.logging.logsDir`
-          '';
-          type = types.bool;
-          default = false;
-        };
+        enable = mkEnableOption ''
+          If files for each services' logs should be written to `settings.logging.logsDir`
+        '';
         logsDir = mkOption {
           description = ''
             Directory to (create and) write per service logs to
