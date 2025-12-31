@@ -6,11 +6,12 @@ use clap::Parser;
 use env_logger::Env;
 use eyre::{Context, Result};
 
-use crate::cli::Cli;
+use crate::{cli::Cli, subreaper::Subreaper};
 
 pub mod cli;
 pub mod config;
 pub mod process_manager;
+pub mod subreaper;
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -19,5 +20,6 @@ async fn main() -> Result<()> {
         .try_init()
         .wrap_err("Failed to setup env_logger")?;
 
+    Subreaper::enable()?;
     Cli::parse().run().await.wrap_err("Failed to run nimi CLI")
 }
