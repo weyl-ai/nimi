@@ -99,7 +99,9 @@ impl Logger {
             }
         }
 
-        Self::flush_log_file(&mut logs_file).await
+        logs_file.flush().await?;
+
+        Ok(())
     }
 
     async fn create_logs_file(logs_dir: &Path, target: &str) -> Result<BufWriter<File>> {
@@ -119,12 +121,6 @@ impl Logger {
     async fn write_log_file_line(writer: &mut BufWriter<File>, line: &str) -> Result<()> {
         writer.write_all(line.as_bytes()).await?;
         writer.write_all(b"\n").await?;
-
-        Ok(())
-    }
-
-    async fn flush_log_file(writer: &mut BufWriter<File>) -> Result<()> {
-        writer.flush().await?;
 
         Ok(())
     }
