@@ -3,11 +3,19 @@
 //! Contains items useful for spawning and managing the actual processes associated with a
 //! `Service`
 
-use std::{path::PathBuf, process::Stdio, sync::Arc};
+use std::{
+    path::PathBuf,
+    process::{ExitStatus, Stdio},
+    sync::Arc,
+};
 
 use eyre::{Context, Result};
 use log::{debug, info};
-use tokio::process::{Child, Command};
+use thiserror::Error;
+use tokio::{
+    process::{Child, Command},
+    task::JoinSet,
+};
 
 pub mod config_dir;
 pub mod logger;
@@ -30,6 +38,12 @@ pub struct ServiceManager {
 
     config_dir: ConfigDir,
     logs_dir: Arc<Option<PathBuf>>,
+}
+
+#[derive(Error, Debug)]
+enum ServiceError {
+    #[error("service exited with status {status}")]
+    ProcessExited { status: ExitStatus },
 }
 
 /// Used to initialize the Service Manager in a structured manner
@@ -79,16 +93,21 @@ impl ServiceManager {
     /// This will handle restarts, attach logging processes and manage linking the config
     /// directory.
     pub async fn run(&mut self) -> Result<()> {
-        while self.spawn_service_process().await.is_err() {
-            match self.settings.restart.mode {
-                RestartMode::Always => {
-                    info!("Process {} exited, restarting (mode: always)", &self.name)
+        while let Err(e) = self.spawn_service_process().await {
+            match e.downcast_ref() {
+                Some(ServiceError::ProcessExited { status }) => {
+                    info!("Process {} exited with status {}", &self.name, status)
                 }
+                None => return Err(e),
+            }
+
+            match self.settings.restart.mode {
+                RestartMode::Always => info!("restarting (mode: always)"),
                 RestartMode::UpToCount => {
                     if self.current_restart_count >= self.settings.restart.count {
                         info!(
-                            "Process {} exited, not restarting (mode: up-to-count {}/{})",
-                            &self.name, self.current_restart_count, self.settings.restart.count
+                            "Not restarting (mode: up-to-count {}/{})",
+                            self.current_restart_count, self.settings.restart.count
                         );
                         break;
                     }
@@ -96,15 +115,12 @@ impl ServiceManager {
                     self.current_restart_count += 1;
 
                     info!(
-                        "Process {} exited, restarting (mode: up-to-count {}/{})",
-                        &self.name, self.current_restart_count, self.settings.restart.count
+                        "Restarting (mode: up-to-count {}/{})",
+                        self.current_restart_count, self.settings.restart.count
                     );
                 }
                 RestartMode::Never => {
-                    info!(
-                        "Process {} exited, not restarting (mode: never)",
-                        &self.name
-                    );
+                    info!("Not restarting (mode: never)");
 
                     break;
                 }
@@ -128,36 +144,36 @@ impl ServiceManager {
     /// shutdown sequeneces
     pub async fn spawn_service_process(&mut self) -> Result<()> {
         let mut process = self.create_service_child().await?;
+        let mut set = JoinSet::new();
 
         Logger::Stdout.start(
             &mut process.stdout,
             Arc::clone(&self.name),
             Arc::clone(&self.logs_dir),
+            &mut set,
         )?;
         Logger::Stderr.start(
             &mut process.stderr,
             Arc::clone(&self.name),
             Arc::clone(&self.logs_dir),
+            &mut set,
         )?;
 
         tokio::select! {
             _ = self.cancel_tok.cancelled() => {
                 debug!(target: &self.name, "Received shutdown signal");
                 process.kill().await.wrap_err("Failed to kill service process")?;
-                return Ok(());
             }
             status = process.wait() => {
                 let status = status.wrap_err("Failed to get process status")?;
                 eyre::ensure!(
                     status.success(),
-                    "Service `{}` exited with status: {}",
-                    self.name,
-                    status
+                    ServiceError::ProcessExited { status }
                 );
             }
         }
 
-        Ok(())
+        set.join_all().await.into_iter().collect()
     }
 
     /// Create service child

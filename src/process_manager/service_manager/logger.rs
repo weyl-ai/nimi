@@ -7,8 +7,9 @@ use std::{path::PathBuf, sync::Arc};
 use eyre::{Context, ContextCompat, Result};
 use log::{debug, error};
 use tokio::{
-    fs::File,
+    fs::{self, File},
     io::{AsyncBufReadExt, AsyncRead, AsyncWriteExt, BufReader, BufWriter, Lines},
+    task::JoinSet,
 };
 
 /// Logger type
@@ -29,6 +30,7 @@ impl Logger {
         fd: &mut Option<D>,
         target: Arc<String>,
         logs_dir: Arc<Option<PathBuf>>,
+        set: &mut JoinSet<Result<()>>,
     ) -> Result<()>
     where
         D: AsyncRead + Unpin + Send + 'static,
@@ -36,7 +38,7 @@ impl Logger {
         let mut reader = Self::get_lines_reader(fd)
             .wrap_err("Failed to acquire lines reader for stdout logger")?;
 
-        tokio::spawn(async move {
+        set.spawn(async move {
             let mut logs_file = Self::create_logs_file(logs_dir, &target).await?;
 
             loop {
@@ -54,6 +56,8 @@ impl Logger {
                 }
             }
 
+            Self::flush_log_file(&mut logs_file).await?;
+
             Ok::<_, eyre::Report>(())
         });
 
@@ -70,7 +74,11 @@ impl Logger {
 
         let logs_path = logs_dir.join(format!("{}.txt", &target));
 
-        let file = File::create_new(logs_path)
+        let file = fs::OpenOptions::new()
+            .write(true)
+            .append(true)
+            .create(true)
+            .open(logs_path)
             .await
             .wrap_err_with(|| format!("Failed to create logs file for {}", &target))?;
 
@@ -84,6 +92,16 @@ impl Logger {
 
         writer.write_all(line.as_bytes()).await?;
         writer.write_all(b"\n").await?;
+
+        Ok(())
+    }
+
+    async fn flush_log_file(writer: &mut Option<BufWriter<File>>) -> Result<()> {
+        let Some(writer) = writer else {
+            return Ok(());
+        };
+
+        writer.flush().await?;
 
         Ok(())
     }

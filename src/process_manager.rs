@@ -60,10 +60,19 @@ impl ProcessManager {
 
         let target = cwd.join(logs_path);
 
-        match fs::create_dir(&target).await {
-            Ok(()) => Ok(target),
-            Err(e) if e.kind() == ErrorKind::AlreadyExists => Ok(target),
-            Err(e) => Err(e).wrap_err("Failed to create logs dir"),
+        let logs_no = 0;
+        loop {
+            let sub_dir = target.join(format!("logs-{logs_no}"));
+
+            match fs::create_dir_all(&sub_dir).await {
+                Ok(()) => return Ok(sub_dir),
+                Err(e) if e.kind() == ErrorKind::AlreadyExists => continue,
+                Err(e) => {
+                    return Err(e).wrap_err_with(|| {
+                        format!("Failed to create logs dir: {}", sub_dir.to_string_lossy())
+                    });
+                }
+            };
         }
     }
 

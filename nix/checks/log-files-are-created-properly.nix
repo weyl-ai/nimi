@@ -51,14 +51,14 @@ in
         echo "${lib.getExe nimiWrapper}"
         ${lib.getExe nimiWrapper}
 
-        a_logs="$(cat my_logs/service-a.txt)"
+        a_logs="$(cat my_logs/logs-0/service-a.txt)"
         if [ "Hello from service A" != "$a_logs" ]; then
           echo "Got incorrect output from service A"
-          echo "Contents: $(cat my_logs/service-a.txt)"
+          echo "Contents: $a_logs"
           exit 1
         fi
 
-        b_logs="$(cat my_logs/service-b.txt)"
+        b_logs="$(cat my_logs/logs-0/service-b.txt)"
         if [ "Hello from service B" != "$b_logs" ]; then
           echo "Got incorrect output from service B"
           echo "Contents: $b_logs"
