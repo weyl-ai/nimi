@@ -60,9 +60,10 @@ impl ProcessManager {
 
         let target = cwd.join(logs_path);
 
-        let logs_no = 0;
+        let mut logs_no = 0;
         loop {
             let sub_dir = target.join(format!("logs-{logs_no}"));
+            logs_no += 1;
 
             match fs::create_dir_all(&sub_dir).await {
                 Ok(()) => return Ok(sub_dir),
