@@ -8,6 +8,7 @@ use futures::future::OptionFuture;
 use log::{debug, error, info};
 use std::{collections::HashMap, env, io::ErrorKind, path::PathBuf, sync::Arc};
 use tokio::{fs, process::Command, task::JoinSet};
+use tokio::signal::unix::{signal, SignalKind};
 use tokio_util::sync::CancellationToken;
 
 pub mod service;
@@ -121,7 +122,12 @@ impl ProcessManager {
     fn spawn_shutdown_task(&self, cancel_tok: &CancellationToken) {
         let token = cancel_tok.clone();
         tokio::spawn(async move {
-            tokio::signal::ctrl_c().await?;
+            let mut sigterm =
+                signal(SignalKind::terminate()).wrap_err("Failed to register SIGTERM handler")?;
+            tokio::select! {
+                _ = tokio::signal::ctrl_c() => {},
+                _ = sigterm.recv() => {},
+            }
             token.cancel();
             Ok::<_, eyre::Report>(())
         });
