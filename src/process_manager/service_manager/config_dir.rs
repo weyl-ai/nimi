@@ -30,7 +30,7 @@ impl ConfigDir {
 
         let cfg_dir_path = tmp_dir.join(&dir_name);
 
-        match fs::create_dir(&cfg_dir_path).await {
+        match fs::create_dir_all(&cfg_dir_path).await {
             Ok(()) => {}
             Err(e) if e.kind() == ErrorKind::AlreadyExists => return Ok(Self(cfg_dir_path)),
             Err(e) => return Err(e).wrap_err("Failed to create config dir"),
