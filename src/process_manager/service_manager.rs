@@ -12,6 +12,7 @@ use std::{
 use eyre::{Context, Result};
 use log::{debug, info};
 use thiserror::Error;
+use tokio::time::timeout;
 use tokio::{
     process::{Child, Command},
     task::JoinSet,
@@ -162,7 +163,7 @@ impl ServiceManager {
         tokio::select! {
             _ = self.cancel_tok.cancelled() => {
                 debug!(target: &self.name, "Received shutdown signal");
-                process.kill().await.wrap_err("Failed to kill service process")?;
+                Self::shutdown_process(&mut process, self.settings.restart.time).await?;
             }
             status = process.wait() => {
                 let status = status.wrap_err("Failed to get process status")?;
@@ -174,6 +175,33 @@ impl ServiceManager {
         }
 
         set.join_all().await.into_iter().collect()
+    }
+
+    async fn shutdown_process(
+        process: &mut Child,
+        timeout_duration: std::time::Duration,
+    ) -> Result<()> {
+        #[cfg(unix)]
+        {
+            use nix::sys::signal::{Signal, kill};
+            use nix::unistd::Pid;
+
+            if let Some(pid) = process.id() {
+                let pid = Pid::from_raw(pid as i32);
+                let _ = kill(pid, Signal::SIGTERM);
+                if timeout(timeout_duration, process.wait()).await.is_err() {
+                    let _ = kill(pid, Signal::SIGKILL);
+                    let _ = process.wait().await;
+                }
+
+                return Ok(());
+            }
+        }
+
+        process
+            .kill()
+            .await
+            .wrap_err("Failed to kill service process")
     }
 
     /// Create service child
