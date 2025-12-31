@@ -37,6 +37,10 @@ impl ConfigDir {
         }
 
         for cfg in config_data.values() {
+            if !cfg.enable {
+                continue;
+            }
+
             let out_location = cfg_dir_path.join(&cfg.path);
             fs::symlink(&cfg.source, out_location)
                 .await
