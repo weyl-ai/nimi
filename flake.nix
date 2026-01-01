@@ -17,6 +17,9 @@
     # TODO: revert to github:nlewo/nix2container once issue #185 is fixed
     nix2container.url = "github:cameronraysmith/nix2container/185-skopeo-fix";
     nix2container.inputs.nixpkgs.follows = "nixpkgs";
+
+    home-manager.url = "github:nix-community/home-manager";
+    home-manager.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   nixConfig = {
