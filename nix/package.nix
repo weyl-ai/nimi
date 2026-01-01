@@ -1,6 +1,6 @@
 { self, lib, ... }:
 let
-  cargoToml = builtins.fromTOML (builtins.readFile "${self}/Cargo.toml");
+  cargoToml = fromTOML (builtins.readFile "${self}/Cargo.toml");
 in
 {
   perSystem =
@@ -10,14 +10,13 @@ in
         pname = cargoToml.package.name;
         inherit (cargoToml.package) version;
 
-        src = lib.sources.cleanSourceWith {
-          src = self;
-          filter =
-            path: _type:
-            let
-              rel = lib.removePrefix (toString self + "/") (toString path);
-            in
-            rel == "Cargo.toml" || rel == "Cargo.lock" || rel == "src" || lib.hasPrefix "src/" rel;
+        src = lib.fileset.toSource {
+          root = ../.;
+          fileset = lib.fileset.unions [
+            ../Cargo.lock
+            ../Cargo.toml
+            ../src
+          ];
         };
 
         cargoLock = {
