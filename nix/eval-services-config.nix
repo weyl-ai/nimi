@@ -1,7 +1,7 @@
 {
   flake-parts-lib,
-  inputs,
   lib,
+  self,
   ...
 }:
 let
@@ -29,11 +29,11 @@ in
         let
           evaluatedConfig = lib.evalModules {
             modules = [
-              (lib.modules.importApply ./_nimi-module.nix { inherit (inputs) nixpkgs; })
+              self.modules.nimi.default
               module
             ];
             specialArgs = { inherit pkgs; };
-            class = "service";
+            class = "nimi";
           };
 
           inputJSON = builtins.toJSON evaluatedConfig.config;

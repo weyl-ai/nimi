@@ -16,7 +16,7 @@ use crate::{config::Config, process_manager::ProcessManager};
 ///
 /// ## Generate a pre-configured binary from nixos modular services
 ///
-/// ```nimi
+/// ```nix
 /// pkgs.nimi.evalServicesConfig {
 ///   services."ghostunnel-plain-old" = {
 ///     imports = [ pkgs.ghostunnel.services.default ];
@@ -42,11 +42,13 @@ use crate::{config::Config, process_manager::ProcessManager};
 ///     };
 ///   };
 /// }
+/// ```
 ///
 /// ## Interact with an existing config
+///
 /// ```bash
-/// nimi validate --config ./my-config.json
-/// nimi run --config ./my-config.json
+/// nimi --config ./my-config.json validate
+/// nimi --config ./my-config.json run
 /// ```
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]

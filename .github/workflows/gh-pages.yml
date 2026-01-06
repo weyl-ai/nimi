@@ -1,0 +1,35 @@
+name: Deploy nimi documentation
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build-config:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@main
+
+      - name: Build Docs
+        run: nix build .#docs --accept-flake-config -L
+
+      - name: Pages deploy
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: result/share/nimi/docs
+          clean-exclude: pr-preview/
+          force: false

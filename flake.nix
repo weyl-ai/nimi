@@ -10,14 +10,17 @@
 
     treefmt-nix.url = "github:numtide/treefmt-nix";
     treefmt-nix.inputs.nixpkgs.follows = "nixpkgs";
+
+    ndg.url = "github:feel-co/ndg";
+    ndg.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   nixConfig = {
     extra-substituters = [
-      "https://cache.nixos.org"
+      "https://weyl-ai.cachix.org"
     ];
     extra-trusted-public-keys = [
-      "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
+      "weyl-ai.cachix.org-1:cR0SpSAPw7wejZ21ep4SLojE77gp5F2os260eEWqTTw="
     ];
   };
 
