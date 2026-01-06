@@ -27,7 +27,7 @@ For each `perSystem.nimi.<name>` entry, the module generates:
         ];
       };
       settings.restart.mode = "up-to-count";
-      settings.restart.time = 1000;
+      settings.restart.time = 2000;
     };
   };
 }

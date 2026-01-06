@@ -1,0 +1,143 @@
+//! Service Manager Loggers
+//!
+//! Reads the logs from the sub processes and prints them from the `Nimi` instance
+
+use std::{
+    path::{Path, PathBuf},
+    sync::Arc,
+};
+
+use eyre::{Context, ContextCompat, Result};
+use log::{debug, error};
+use tokio::{
+    fs::{self, File},
+    io::{AsyncBufReadExt, AsyncRead, AsyncWriteExt, BufReader, BufWriter, Lines},
+    task::JoinSet,
+};
+
+/// Logger type
+///
+/// Formats the logs differently based on if they are intended for stdout or stderr
+pub enum Logger {
+    /// Regular process logs
+    Stdout,
+
+    /// Process error logs
+    Stderr,
+}
+
+impl Logger {
+    /// Start a logger for a given file descriptor
+    pub fn start<D>(
+        self,
+        fd: &mut Option<D>,
+        target: Arc<String>,
+        logs_dir: Arc<Option<PathBuf>>,
+        set: &mut JoinSet<Result<()>>,
+    ) -> Result<()>
+    where
+        D: AsyncRead + Unpin + Send + 'static,
+    {
+        let reader = Self::get_lines_reader(fd)
+            .wrap_err("Failed to acquire lines reader for stdout logger")?;
+
+        set.spawn(async move {
+            if let Some(ref logs_dir) = *logs_dir {
+                self.write_logs_console_and_file(reader, &target, logs_dir)
+                    .await?;
+            } else {
+                self.write_logs_console_only(reader, &target).await
+            }
+
+            Ok::<_, eyre::Report>(())
+        });
+
+        Ok(())
+    }
+
+    async fn write_logs_console_only<D>(&self, mut reader: Lines<BufReader<D>>, target: &str)
+    where
+        D: AsyncRead + Unpin + Send + 'static,
+    {
+        loop {
+            match reader.next_line().await {
+                Ok(Some(line)) => {
+                    self.log_line(target, &line);
+                }
+                Ok(None) => break,
+                Err(e) => {
+                    error!(target: &target, "{}", e);
+                    break;
+                }
+            }
+        }
+    }
+
+    async fn write_logs_console_and_file<D>(
+        &self,
+        mut reader: Lines<BufReader<D>>,
+        target: &str,
+        logs_dir: &Path,
+    ) -> Result<()>
+    where
+        D: AsyncRead + Unpin + Send + 'static,
+    {
+        let mut logs_file = Self::create_logs_file(logs_dir, target).await?;
+
+        loop {
+            match reader.next_line().await {
+                Ok(Some(line)) => {
+                    self.log_line(target, &line);
+                    Self::write_log_file_line(&mut logs_file, &line).await?;
+                }
+                Ok(None) => break,
+                Err(e) => {
+                    error!(target: &target, "{}", e);
+                    Self::write_log_file_line(&mut logs_file, e.to_string().as_str()).await?;
+                    break;
+                }
+            }
+        }
+
+        logs_file.flush().await?;
+
+        Ok(())
+    }
+
+    async fn create_logs_file(logs_dir: &Path, target: &str) -> Result<BufWriter<File>> {
+        let logs_path = logs_dir.join(format!("{}.txt", &target));
+
+        let file = fs::OpenOptions::new()
+            .write(true)
+            .append(true)
+            .create(true)
+            .open(logs_path)
+            .await
+            .wrap_err_with(|| format!("Failed to create logs file for {}", &target))?;
+
+        Ok(BufWriter::new(file))
+    }
+
+    async fn write_log_file_line(writer: &mut BufWriter<File>, line: &str) -> Result<()> {
+        writer.write_all(line.as_bytes()).await?;
+        writer.write_all(b"\n").await?;
+
+        Ok(())
+    }
+
+    fn log_line(&self, target: &str, line: &str) {
+        match self {
+            Self::Stdout => debug!(target: target, "{}", line),
+            Self::Stderr => error!(target: target, "{}", line),
+        }
+    }
+
+    fn get_lines_reader<D>(fd: &mut Option<D>) -> Result<Lines<BufReader<D>>>
+    where
+        D: AsyncRead,
+    {
+        let taken = fd.take().wrap_err("Service was missing field value")?;
+
+        Ok(BufReader::new(taken).lines())
+    }
+}

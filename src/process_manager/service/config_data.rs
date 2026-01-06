@@ -1,12 +1,15 @@
-use std::path::PathBuf;
+use std::{collections::HashMap, path::PathBuf};
 
 use serde::{Deserialize, Serialize};
+
+/// Convenience type for the map of config data
+pub type ConfigDataMap = HashMap<String, ConfigData>;
 
 #[derive(Debug, Serialize, Deserialize)]
 /// Service confguration data
 pub struct ConfigData {
     /// If this piece of config data was enabled
-    pub enabled: bool,
+    pub enable: bool,
     /// The path to the output configuration file
     pub path: PathBuf,
     /// Contents of the config data

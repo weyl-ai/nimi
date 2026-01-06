@@ -36,7 +36,7 @@ packages.${system}.myNimiWrapper = pkgs.nimi.mkNimiBin {
     };
   };
   settings.restart.mode = "up-to-count";
-  settings.restart.time = 1000;
+  settings.restart.time = 2000;
 }
 ```
 
@@ -53,9 +53,13 @@ nix run .#myNimiWrapper
 - `settings.restart`: choose `never`, `up-to-count`, or `always`, and tune delay
   and retry count.
 - `settings.startup`: optionally run one binary before services start.
+- `settings.logging`: write per-service log files; see `docs/logging.md`.
+- `configData`: define per-service config files; see `docs/config-data.md`.
 
 # Next steps
 
 - Explore service definitions and compose them per environment.
 - Use restart policies to match reliability needs.
 - Add a startup hook for migrations, warm-ups, or one-time init tasks.
+- Create containers with `docs/container.md`.
+- Integrate with Nix tooling: `docs/flake-module.md`, `docs/nixos-module.md`, and `docs/home-module.md`.

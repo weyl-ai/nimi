@@ -37,6 +37,7 @@ in
           text = ''
             exec nimi --config "${cfgJson}" run "$@"
           '';
+          inherit (evaluatedConfig.config) passthru meta;
         };
     };
 

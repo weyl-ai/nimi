@@ -3,18 +3,23 @@
 //! Can take a rust represntation of some `NixOS` modular services
 //! and runs them streaming logs back to the original console.
 
-use eyre::{Context, Result};
+use eyre::{Context, Result, eyre};
+use futures::future::OptionFuture;
 use log::{debug, error, info};
-use std::{collections::HashMap, sync::Arc, time::Duration};
-use tokio::{process::Command, sync::broadcast};
+use std::{collections::HashMap, env, io::ErrorKind, path::PathBuf, sync::Arc};
+use tokio::signal::unix::{SignalKind, signal};
+use tokio::{fs, process::Command, task::JoinSet};
+use tokio_util::sync::CancellationToken;
 
-mod service;
-mod settings;
+pub mod service;
+pub mod service_manager;
+pub mod settings;
 
 pub use service::Service;
+pub use service_manager::ServiceManager;
 pub use settings::Settings;
 
-use crate::process_manager::settings::RestartMode;
+use crate::process_manager::service_manager::ServiceManagerOpts;
 
 /// Process Manager Struct
 ///
@@ -28,59 +33,6 @@ impl ProcessManager {
     /// Create a new process manager instance
     pub fn new(services: HashMap<String, Service>, settings: Settings) -> Self {
         Self { services, settings }
-    }
-
-    async fn run_process(
-        settings: Arc<Settings>,
-        name: &str,
-        service: Service,
-        mut shutdown_rx: broadcast::Receiver<()>,
-    ) -> Result<()> {
-        let mut current_count = 0;
-        let sleep_time = Duration::from_millis(settings.restart.time as u64);
-
-        loop {
-            let Err(e) = service.run(name, &mut shutdown_rx).await else {
-                return Ok(());
-            };
-
-            error!(target: name, "{}", e);
-
-            match settings.restart.mode {
-                RestartMode::Always => {
-                    info!("Process {} exited, restarting (mode: always)", &name);
-                }
-                RestartMode::UpToCount => {
-                    if current_count >= settings.restart.count {
-                        info!(
-                            "Process {} exited, not restarting (mode: up-to-count {}/{})",
-                            &name, current_count, settings.restart.count
-                        );
-                        return Ok(());
-                    }
-
-                    current_count += 1;
-
-                    info!(
-                        "Process {} exited, restarting (mode: up-to-count {}/{})",
-                        &name, current_count, settings.restart.count
-                    );
-                }
-                RestartMode::Never => {
-                    info!("Process {} exited, not restarting (mode: never)", &name,);
-
-                    return Ok(());
-                }
-            }
-
-            tokio::select! {
-                _ = tokio::time::sleep(sleep_time) => {},
-                _ = shutdown_rx.recv() => {
-                    info!("Received shutdown during restart delay for {}", name);
-                    return Ok(());
-                }
-            }
-        }
     }
 
     async fn run_startup_process(bin: &str) -> Result<()> {
@@ -97,7 +49,95 @@ impl ProcessManager {
             error!(target: bin, "{}", stderr);
         }
 
+        if !output.status.success() {
+            return Err(eyre!(
+                "Startup process exited with non-zero exit code: {}",
+                output.status
+            ));
+        }
+
         Ok(())
+    }
+
+    /// Create logs dir
+    ///
+    /// Creates the logs directory for the process manager
+    /// to have it's services create textual log files in
+    pub async fn create_logs_dir(logs_path: &str) -> Result<PathBuf> {
+        let cwd = env::current_dir()?;
+
+        let target = cwd.join(logs_path);
+
+        let mut logs_no = 0;
+        loop {
+            let sub_dir = target.join(format!("logs-{logs_no}"));
+            logs_no += 1;
+
+            match fs::create_dir_all(&sub_dir).await {
+                Ok(()) => return Ok(sub_dir),
+                Err(e) if e.kind() == ErrorKind::AlreadyExists => continue,
+                Err(e) => {
+                    return Err(e).wrap_err_with(|| {
+                        format!("Failed to create logs dir: {}", sub_dir.to_string_lossy())
+                    });
+                }
+            };
+        }
+    }
+
+    /// Spawn Child Processes
+    ///
+    /// Spawns every service this process manager manages into a `JoinSet`
+    pub async fn spawn_child_processes(
+        self,
+        cancel_tok: &CancellationToken,
+    ) -> Result<JoinSet<Result<()>>> {
+        let mut join_set = tokio::task::JoinSet::new();
+
+        let settings = Arc::new(self.settings);
+        let logs_dir = Arc::new(
+            OptionFuture::from(
+                settings
+                    .logging
+                    .logs_dir
+                    .as_deref()
+                    .map(Self::create_logs_dir),
+            )
+            .await
+            .transpose()?,
+        );
+        let tmp_dir = Arc::new(env::temp_dir());
+
+        for (name, service) in self.services {
+            let opts = ServiceManagerOpts {
+                logs_dir: Arc::clone(&logs_dir),
+                tmp_dir: Arc::clone(&tmp_dir),
+
+                settings: Arc::clone(&settings),
+
+                name: Arc::new(name),
+                service,
+                cancel_tok: cancel_tok.clone(),
+            };
+
+            join_set.spawn(async move { ServiceManager::new(opts).await?.run().await });
+        }
+
+        Ok(join_set)
+    }
+
+    fn spawn_shutdown_task(&self, cancel_tok: &CancellationToken) {
+        let token = cancel_tok.clone();
+        tokio::spawn(async move {
+            let mut sigterm =
+                signal(SignalKind::terminate()).wrap_err("Failed to register SIGTERM handler")?;
+            tokio::select! {
+                _ = tokio::signal::ctrl_c() => {},
+                _ = sigterm.recv() => {},
+            }
+            token.cancel();
+            Ok::<_, eyre::Report>(())
+        });
     }
 
     /// Run the services defined for the process manager instance
@@ -111,59 +151,21 @@ impl ProcessManager {
             Self::run_startup_process(startup).await?;
         }
 
-        let (shutdown_tx, _) = broadcast::channel::<()>(1);
+        let cancel_tok = CancellationToken::new();
+        self.spawn_shutdown_task(&cancel_tok);
 
-        let settings = Arc::new(self.settings);
+        let mut services_set = self.spawn_child_processes(&cancel_tok).await?;
 
-        let mut join_set = tokio::task::JoinSet::new();
+        while let Some(res) = services_set.join_next().await {
+            let flat: Result<()> = res.map_err(Into::into).and_then(std::convert::identity);
 
-        for (name, service) in self.services {
-            let shutdown_rx = shutdown_tx.subscribe();
-            let settings = Arc::clone(&settings);
-            join_set.spawn(async move {
-                Self::run_process(settings, &name, service, shutdown_rx).await
-            });
-        }
-
-        let shutdown_signal = tokio::signal::ctrl_c();
-        tokio::pin!(shutdown_signal);
-
-        loop {
-            tokio::select! {
-                shutdown = &mut shutdown_signal => {
-                    shutdown.wrap_err("Failed to listen for shutdown event")?;
-                    info!("Shutting down...");
-                    let _ = shutdown_tx.send(());
-                    break;
-                }
-                result = join_set.join_next() => {
-                    match result {
-                        Some(Ok(Ok(()))) => {
-                            if join_set.is_empty() {
-                                return Ok(());
-                            }
-                        }
-                        Some(Ok(Err(err))) => {
-                            info!("Shutting down...");
-                            let _ = shutdown_tx.send(());
-                            while join_set.join_next().await.is_some() {}
-                            return Err(err).wrap_err("Process failed");
-                        }
-                        Some(Err(err)) => {
-                            info!("Shutting down...");
-                            let _ = shutdown_tx.send(());
-                            while join_set.join_next().await.is_some() {}
-                            return Err(err).wrap_err("Process task panicked");
-                        }
-                        None => return Ok(()),
-                    }
-                }
+            if let Err(e) = flat {
+                cancel_tok.cancel();
+                return Err(e);
             }
         }
 
-        while join_set.join_next().await.is_some() {}
-
-        info!("Finished shutdown");
+        info!("Shutting down process manager...");
 
         Ok(())
     }
