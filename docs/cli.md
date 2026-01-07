@@ -24,7 +24,7 @@ The `Nimi` CLI is the runtime entry-point for a generated modular services confi
 # Runtime behavior
 
 - Optional startup binary runs once before services start.
-- Each service runs with a clean environment and its configured `argv`.
+- Each service runs its configured `argv`.
 - Service logs stream to stdout/stderr with the service name as the log target.
 - Restart behavior follows `settings.restart` (`never`, `up-to-count`, `always`).
 - `Ctrl-C` triggers a graceful shutdown and waits for services to exit.

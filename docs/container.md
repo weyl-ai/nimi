@@ -1,13 +1,15 @@
 # Containers
 
-`Nimi` ships with a built-in container generator wired through `nimi.mkContainerImage`.
+`Nimi` ships with a built-in container generator wired through `mkContainerImage`,
+exposed via the package passthru (for example `pkgs.nimi.mkContainerImage` or
+`self'.packages.nimi.mkContainerImage` in a flake).
 It evaluates the same modular services config as `mkNimiBin`, then builds an OCI
 image via `nix2container.buildImage` with the `Nimi` runner set as the `entrypoint`.
 
 # Minimal example
 
 ```nix
-nimi.mkContainerImage {
+pkgs.nimi.mkContainerImage {
   services."my-app" = {
     imports = [ pkgs.some-application.services.default ];
     someApplication.listen = "0.0.0.0:8080";

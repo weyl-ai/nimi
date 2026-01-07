@@ -62,4 +62,5 @@ nix run .#myNimiWrapper
 - Use restart policies to match reliability needs.
 - Add a startup hook for migrations, warm-ups, or one-time init tasks.
 - Create containers with `docs/container.md`.
+- Add `pkgs.nimi` to an existing `nixpkgs` instance with `docs/overlay.md`.
 - Integrate with Nix tooling: `docs/flake-module.md`, `docs/nixos-module.md`, and `docs/home-module.md`.
