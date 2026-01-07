@@ -7,7 +7,7 @@ use log::{debug, warn};
 #[cfg(target_os = "linux")]
 use std::collections::HashSet;
 #[cfg(target_os = "linux")]
-use std::sync::{Mutex, OnceLock};
+use std::sync::{Mutex, MutexGuard, OnceLock};
 #[cfg(target_os = "linux")]
 use tokio::signal::unix::{SignalKind, signal};
 
@@ -52,6 +52,22 @@ impl Subreaper {
             Ok(ChildGuard::noop())
         }
     }
+
+    /// Pause subreaper reaping while a child is spawned and registered.
+    pub fn pause_reaping() -> ReaperPauseGuard {
+        #[cfg(target_os = "linux")]
+        {
+            let guard = Self::reaper_guard()
+                .lock()
+                .unwrap_or_else(|err| err.into_inner());
+            ReaperPauseGuard::new(guard)
+        }
+
+        #[cfg(not(target_os = "linux"))]
+        {
+            ReaperPauseGuard::noop()
+        }
+    }
 }
 
 /// Guard to unregister tracked child PIDs when dropped.
@@ -67,6 +83,35 @@ impl ChildGuard {
     }
 }
 
+/// Guard to pause reaping while spawning and registering children.
+#[cfg(target_os = "linux")]
+pub struct ReaperPauseGuard(Option<MutexGuard<'static, ()>>);
+
+/// Guard to pause reaping while spawning and registering children.
+#[cfg(not(target_os = "linux"))]
+pub struct ReaperPauseGuard(());
+
+#[cfg(target_os = "linux")]
+impl ReaperPauseGuard {
+    fn new(guard: MutexGuard<'static, ()>) -> Self {
+        Self(Some(guard))
+    }
+}
+
+#[cfg(target_os = "linux")]
+impl Drop for ReaperPauseGuard {
+    fn drop(&mut self) {
+        let _ = self.0.take();
+    }
+}
+
+#[cfg(not(target_os = "linux"))]
+impl ReaperPauseGuard {
+    fn noop() -> Self {
+        Self(())
+    }
+}
+
 impl Drop for ChildGuard {
     fn drop(&mut self) {
         #[cfg(target_os = "linux")]
@@ -78,6 +123,11 @@ impl Drop for ChildGuard {
 
 #[cfg(target_os = "linux")]
 impl Subreaper {
+    fn reaper_guard() -> &'static Mutex<()> {
+        static REAPER_GUARD: OnceLock<Mutex<()>> = OnceLock::new();
+        REAPER_GUARD.get_or_init(|| Mutex::new(()))
+    }
+
     fn registry() -> &'static Mutex<HashSet<i32>> {
         static CHILDREN: OnceLock<Mutex<HashSet<i32>>> = OnceLock::new();
         CHILDREN.get_or_init(|| Mutex::new(HashSet::new()))
@@ -124,6 +174,9 @@ impl Subreaper {
     }
 
     fn reap_orphaned_children() {
+        let _guard = Self::reaper_guard()
+            .lock()
+            .unwrap_or_else(|err| err.into_inner());
         let managed = Self::snapshot_managed();
         let children = match Self::collect_children_from_proc() {
             Ok(children) => children,
