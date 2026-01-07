@@ -40,6 +40,7 @@ impl ProcessManager {
     async fn run_startup_process(&self, bin: &str, cancel_tok: &CancellationToken) -> Result<()> {
         let mut set = JoinSet::new();
 
+        let _pause = Subreaper::pause_reaping();
         let mut process = Command::new(bin)
             .stdout(Stdio::piped())
             .stderr(Stdio::piped())

@@ -26,7 +26,7 @@ pub use logger::Logger;
 use tokio_util::sync::CancellationToken;
 
 use crate::process_manager::{Service, Settings, settings::RestartMode};
-use crate::subreaper::Subreaper;
+use crate::subreaper::{ChildGuard, Subreaper};
 
 /// Responsible for the running of and managing of service state
 pub struct ServiceManager {
@@ -150,9 +150,7 @@ impl ServiceManager {
     /// Attaches loggers and `wait`s on the process, forwarding
     /// shutdown sequeneces
     pub async fn spawn_service_process(&mut self) -> Result<()> {
-        let mut process = self.create_service_child().await?;
-        let _child_guard =
-            Subreaper::track_child(process.id()).wrap_err("Failed to track service child")?;
+        let (mut process, _child_guard) = self.create_service_child().await?;
         let mut set = JoinSet::new();
 
         Logger::Stdout.start(
@@ -217,8 +215,9 @@ impl ServiceManager {
     ///
     /// Responsible for creating the actual child process for the
     /// service
-    pub async fn create_service_child(&self) -> Result<Child> {
-        Command::new(self.service.process.argv.binary())
+    pub async fn create_service_child(&self) -> Result<(Child, ChildGuard)> {
+        let _pause = Subreaper::pause_reaping();
+        let process = Command::new(self.service.process.argv.binary())
             .args(self.service.process.argv.args())
             .env("XDG_CONFIG_HOME", &self.config_dir)
             .stdout(Stdio::piped())
@@ -230,6 +229,11 @@ impl ServiceManager {
                     "Failed to start process for service: {:?}",
                     self.service.process
                 )
-            })
+            })?;
+
+        let guard =
+            Subreaper::track_child(process.id()).wrap_err("Failed to track service child")?;
+
+        Ok((process, guard))
     }
 }
