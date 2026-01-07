@@ -40,7 +40,7 @@ in
               name: module: {
                 "${name}" = nimi.mkNimiBin {
                   imports = [ module ];
-                  settings.binName = name;
+                  settings.binName = lib.mkDefault name;
                 };
               }
             ))

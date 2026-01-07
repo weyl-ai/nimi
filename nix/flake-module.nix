@@ -33,7 +33,7 @@ let
               let
                 overwrittenName = {
                   imports = [ module ];
-                  settings.binName = name;
+                  settings.binName = lib.mkDefault name;
                 };
               in
               {
