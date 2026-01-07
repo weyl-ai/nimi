@@ -21,6 +21,7 @@ pub use service_manager::ServiceManager;
 pub use settings::Settings;
 
 use crate::process_manager::service_manager::{Logger, ServiceError, ServiceManagerOpts};
+use crate::subreaper::Subreaper;
 
 /// Process Manager Struct
 ///
@@ -45,6 +46,8 @@ impl ProcessManager {
             .kill_on_drop(true)
             .spawn()
             .wrap_err_with(|| format!("Failed to spawn startup binary: {:?}", bin))?;
+        let _child_guard =
+            Subreaper::track_child(process.id()).wrap_err("Failed to track startup child")?;
 
         let name = Arc::new("startup".to_owned());
         let logs_dir = Arc::from(None);
