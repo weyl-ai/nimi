@@ -33,7 +33,7 @@ in
           description = ''
             An attribute set describing an image configuration as defined in the [OCI image specification](https://github.com/opencontainers/image-spec/blob/8b9d41f48198a7d6d0a5c1a12dc2d1f7f47fc97f/specs-go/v1/config.go#L23).
           '';
-          type = types.raw;
+          type = types.attrs;
           default = { };
         };
         copyToRoot = mkOption {
