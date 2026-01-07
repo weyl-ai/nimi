@@ -217,7 +217,6 @@ impl ServiceManager {
     pub async fn create_service_child(&self) -> Result<Child> {
         Command::new(self.service.process.argv.binary())
             .args(self.service.process.argv.args())
-            .env_clear()
             .env("XDG_CONFIG_HOME", &self.config_dir)
             .stdout(Stdio::piped())
             .stderr(Stdio::piped())

@@ -40,7 +40,6 @@ impl ProcessManager {
         let mut set = JoinSet::new();
 
         let mut process = Command::new(bin)
-            .env_clear()
             .stdout(Stdio::piped())
             .stderr(Stdio::piped())
             .kill_on_drop(true)
