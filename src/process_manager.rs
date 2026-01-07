@@ -168,7 +168,7 @@ impl ProcessManager {
         self.spawn_shutdown_task(&cancel_tok);
 
         if let Some(startup) = &self.settings.startup.run_on_startup {
-            info!("Running startup binary...");
+            info!("Running startup binary ({})...", startup);
             self.run_startup_process(startup, &cancel_tok).await?;
         }
 
