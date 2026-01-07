@@ -46,7 +46,7 @@ in
             be copied to the image root. For instance, to get bash and
             coreutils in the image `/bin`:
           '';
-          type = types.either types.pathInStore (types.listOf types.pathInStore);
+          type = types.coercedTo types.pathInStore (p: [ p ]) (types.listOf types.pathInStore);
           default = [ ];
         };
         fromImage = mkOption {
