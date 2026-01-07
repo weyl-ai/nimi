@@ -41,10 +41,15 @@ pub struct ServiceManager {
     logs_dir: Arc<Option<PathBuf>>,
 }
 
+/// Errors which can occur during service management
 #[derive(Error, Debug)]
-enum ServiceError {
+pub enum ServiceError {
+    /// Error for when the process exits with a non zero exit code
     #[error("service exited with status {status}")]
-    ProcessExited { status: ExitStatus },
+    ProcessExited {
+        /// Exit status
+        status: ExitStatus,
+    },
 }
 
 /// Used to initialize the Service Manager in a structured manner
@@ -177,7 +182,8 @@ impl ServiceManager {
         set.join_all().await.into_iter().collect()
     }
 
-    async fn shutdown_process(
+    /// Kill a service process gracefully
+    pub async fn shutdown_process(
         process: &mut Child,
         timeout_duration: std::time::Duration,
     ) -> Result<()> {

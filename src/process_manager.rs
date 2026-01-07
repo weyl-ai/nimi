@@ -3,9 +3,9 @@
 //! Can take a rust represntation of some `NixOS` modular services
 //! and runs them streaming logs back to the original console.
 
-use eyre::{Context, Result, eyre};
+use eyre::{Context, Result};
 use futures::future::OptionFuture;
-use log::{debug, error, info};
+use log::{debug, info};
 use std::{collections::HashMap, env, io::ErrorKind, path::PathBuf, sync::Arc};
 use tokio::signal::unix::{SignalKind, signal};
 use tokio::{fs, process::Command, task::JoinSet};
@@ -19,7 +19,7 @@ pub use service::Service;
 pub use service_manager::ServiceManager;
 pub use settings::Settings;
 
-use crate::process_manager::service_manager::ServiceManagerOpts;
+use crate::process_manager::service_manager::{Logger, ServiceError, ServiceManagerOpts};
 
 /// Process Manager Struct
 ///
@@ -35,28 +35,46 @@ impl ProcessManager {
         Self { services, settings }
     }
 
-    async fn run_startup_process(bin: &str) -> Result<()> {
-        let output = Command::new(bin)
+    async fn run_startup_process(&self, bin: &str, cancel_tok: &CancellationToken) -> Result<()> {
+        let mut set = JoinSet::new();
+
+        let mut process = Command::new(bin)
             .env_clear()
             .kill_on_drop(true)
-            .output()
-            .await
-            .wrap_err_with(|| format!("Failed to run startup binary: {:?}", bin))?;
+            .spawn()
+            .wrap_err_with(|| format!("Failed to spawn startup binary: {:?}", bin))?;
 
-        debug!(target: bin, "{}", str::from_utf8(&output.stdout)?);
-        let stderr = str::from_utf8(&output.stderr)?;
-        if !stderr.is_empty() {
-            error!(target: bin, "{}", stderr);
+        let name = Arc::new("startup".to_owned());
+        let logs_dir = Arc::from(None);
+
+        Logger::Stdout.start(
+            &mut process.stdout,
+            Arc::clone(&name),
+            Arc::clone(&logs_dir),
+            &mut set,
+        )?;
+        Logger::Stderr.start(
+            &mut process.stderr,
+            Arc::clone(&name),
+            Arc::clone(&logs_dir),
+            &mut set,
+        )?;
+
+        tokio::select! {
+            _ = cancel_tok.cancelled() => {
+                debug!(target: &name, "Received shutdown signal");
+                ServiceManager::shutdown_process(&mut process, self.settings.restart.time).await?;
+            }
+            status = process.wait() => {
+                let status = status.wrap_err("Failed to get process status")?;
+                eyre::ensure!(
+                    status.success(),
+                    ServiceError::ProcessExited { status }
+                );
+            }
         }
 
-        if !output.status.success() {
-            return Err(eyre!(
-                "Startup process exited with non-zero exit code: {}",
-                output.status
-            ));
-        }
-
-        Ok(())
+        set.join_all().await.into_iter().collect()
     }
 
     /// Create logs dir
@@ -146,13 +164,13 @@ impl ProcessManager {
     pub async fn run(self) -> Result<()> {
         info!("Starting process manager...");
 
-        if let Some(startup) = &self.settings.startup.run_on_startup {
-            info!("Running startup binary...");
-            Self::run_startup_process(startup).await?;
-        }
-
         let cancel_tok = CancellationToken::new();
         self.spawn_shutdown_task(&cancel_tok);
+
+        if let Some(startup) = &self.settings.startup.run_on_startup {
+            info!("Running startup binary...");
+            self.run_startup_process(startup, &cancel_tok).await?;
+        }
 
         let mut services_set = self.spawn_child_processes(&cancel_tok).await?;
 
