@@ -6,6 +6,7 @@
 use eyre::{Context, Result};
 use futures::future::OptionFuture;
 use log::{debug, info};
+use std::process::Stdio;
 use std::{collections::HashMap, env, io::ErrorKind, path::PathBuf, sync::Arc};
 use tokio::signal::unix::{SignalKind, signal};
 use tokio::{fs, process::Command, task::JoinSet};
@@ -40,6 +41,8 @@ impl ProcessManager {
 
         let mut process = Command::new(bin)
             .env_clear()
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
             .kill_on_drop(true)
             .spawn()
             .wrap_err_with(|| format!("Failed to spawn startup binary: {:?}", bin))?;
@@ -169,7 +172,9 @@ impl ProcessManager {
 
         if let Some(startup) = &self.settings.startup.run_on_startup {
             info!("Running startup binary ({})...", startup);
-            self.run_startup_process(startup, &cancel_tok).await?;
+            self.run_startup_process(startup, &cancel_tok)
+                .await
+                .wrap_err("Failed to run startup process")?;
         }
 
         let mut services_set = self.spawn_child_processes(&cancel_tok).await?;
