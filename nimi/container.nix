@@ -1,4 +1,4 @@
-{ lib, ... }:
+{ lib, config, ... }:
 let
   inherit (lib) mkOption types;
 in
@@ -125,4 +125,19 @@ in
     };
     default = { };
   };
+
+  config.assertions = [
+    {
+      assertion = config.settings.container.name != "";
+      message = "settings.container.name must be a non-empty string.";
+    }
+    {
+      assertion = config.settings.container.tag != "";
+      message = "settings.container.tag must be a non-empty string.";
+    }
+    {
+      assertion = !(builtins.hasAttr "entrypoint" config.settings.container.imageConfig);
+      message = "settings.container.imageConfig.entrypoint is managed by Nimi; remove it to avoid it being ignored.";
+    }
+  ];
 }

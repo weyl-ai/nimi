@@ -1,4 +1,4 @@
-{ lib, ... }:
+{ lib, config, ... }:
 let
   inherit (lib) mkOption mkEnableOption types;
 in
@@ -46,4 +46,11 @@ in
     };
     default = { };
   };
+
+  config.assertions = [
+    {
+      assertion = (!config.settings.logging.enable) || config.settings.logging.logsDir != "";
+      message = "settings.logging.logsDir must be a non-empty string when settings.logging.enable is true.";
+    }
+  ];
 }

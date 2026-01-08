@@ -1,4 +1,4 @@
-{ lib, ... }:
+{ lib, config, ... }:
 let
   inherit (lib) mkOption types;
 in
@@ -20,4 +20,15 @@ in
     type = types.str;
     default = "nimi";
   };
+
+  config.assertions = [
+    {
+      assertion = config.settings.binName != "";
+      message = "settings.binName must be a non-empty string.";
+    }
+    {
+      assertion = !lib.strings.hasInfix "/" config.settings.binName;
+      message = "settings.binName must not contain path separators.";
+    }
+  ];
 }
