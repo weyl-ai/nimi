@@ -70,7 +70,6 @@ in
           }
         );
         default = { };
-        visible = "shallow";
       };
 
       imports = [
