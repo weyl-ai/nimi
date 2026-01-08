@@ -3,6 +3,8 @@ let
   inherit (lib) mkOption types;
 in
 {
+  _class = "nimi";
+
   options.passthru = mkOption {
     description = ''
       [`passthru`](https://ryantm.github.io/nixpkgs/stdenv/stdenv/#var-stdenv-passthru) attributes to

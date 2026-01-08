@@ -3,6 +3,8 @@ let
   inherit (lib) mkOption types;
 in
 {
+  _class = "nimi";
+
   options.settings.startup = mkOption {
     description = ''
       Startup behavior for the nimi process manager.

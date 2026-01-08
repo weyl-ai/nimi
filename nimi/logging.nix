@@ -3,6 +3,8 @@ let
   inherit (lib) mkOption mkEnableOption types;
 in
 {
+  _class = "nimi";
+
   options.settings.logging = mkOption {
     description = ''
       Logging behavior for the nimi process manager.

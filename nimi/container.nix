@@ -3,6 +3,8 @@ let
   inherit (lib) mkOption types;
 in
 {
+  _class = "nimi";
+
   options.settings.container = mkOption {
     description = ''
       Configures nimi's builtin container generation.

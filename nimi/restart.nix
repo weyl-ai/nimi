@@ -3,6 +3,8 @@ let
   inherit (lib) mkOption types;
 in
 {
+  _class = "nimi";
+
   options.settings.restart = mkOption {
     description = ''
       Restart policy for the nimi process manager.

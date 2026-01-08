@@ -3,6 +3,8 @@ let
   inherit (lib) mkOption types;
 in
 {
+  _class = "nimi";
+
   options.meta = mkOption {
     description = ''
       [`meta`](https://ryantm.github.io/nixpkgs/stdenv/meta/) attributes to

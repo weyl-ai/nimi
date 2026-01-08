@@ -3,6 +3,8 @@ let
   inherit (lib) mkOption types;
 in
 {
+  _class = "nimi";
+
   options.settings.binName = mkOption {
     description = ''
       Name of the binary to generate with your nimi wrapper.
