@@ -60,7 +60,7 @@ in
 
     "nimi assertions and warnings evaluation results" = mkOption {
       internal = true;
-      default = [ ];
+      default = false;
       type = types.bool;
       description = ''
         Placeholder module that's impossible to evaluate without running through the assertions first
