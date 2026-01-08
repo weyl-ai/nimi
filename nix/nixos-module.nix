@@ -5,6 +5,9 @@
 }:
 let
   nimiInput = self;
+
+  failedToEvaluateNixOSPkgsError = "while generating nimi nixos packages:";
+  failedToEvaluateNixOSServicesError = "while generating nimi nixos services:";
 in
 {
   flake.nixosModules.default =
@@ -60,9 +63,11 @@ in
           }) nimiPkgs;
         in
         {
-          environment.systemPackages = builtins.attrValues nimiPkgs;
+          environment.systemPackages = builtins.addErrorContext failedToEvaluateNixOSPkgsError (
+            builtins.attrValues nimiPkgs
+          );
 
-          systemd.services = nimiServices;
+          systemd.services = builtins.addErrorContext failedToEvaluateNixOSServicesError nimiServices;
         };
     };
 

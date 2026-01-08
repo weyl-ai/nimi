@@ -6,6 +6,8 @@
 }:
 let
   nimiInput = self;
+  failedToEvaluateHomePkgsError = "while generating nimi home manager packages:";
+  failedToEvaluateHomeServicesError = "while generating nimi home manager services:";
 in
 {
   flake.homeModules.default =
@@ -64,9 +66,11 @@ in
           }) nimiPkgs;
         in
         {
-          home.packages = builtins.attrValues nimiPkgs;
+          home.packages = builtins.addErrorContext failedToEvaluateHomePkgsError (
+            builtins.attrValues nimiPkgs
+          );
 
-          systemd.user.services = nimiServices;
+          systemd.user.services = builtins.addErrorContext failedToEvaluateHomeServicesError nimiServices;
         };
     };
 

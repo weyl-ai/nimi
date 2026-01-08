@@ -6,6 +6,8 @@
 let
   inherit (flake-parts-lib) mkPerSystemOption;
   inherit (lib) mkOption types;
+
+  failedConversionToJSONError = "while serializing nimi config to json:";
 in
 {
   options.perSystem = mkPerSystemOption {
@@ -24,7 +26,7 @@ in
       toNimiJson =
         evaluatedConfig:
         let
-          inputJSON = builtins.toJSON evaluatedConfig.config;
+          inputJSON = builtins.addErrorContext failedConversionToJSONError (builtins.toJSON evaluatedConfig);
 
           formattedJSON =
             pkgs.runCommandLocal "nimi-config-formatted.json"

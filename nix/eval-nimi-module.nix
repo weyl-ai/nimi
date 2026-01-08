@@ -7,6 +7,8 @@
 let
   inherit (flake-parts-lib) mkPerSystemOption;
   inherit (lib) mkOption types;
+
+  failedToEvaluateNimiModuleError = "while evaluating nimi module set:";
 in
 {
   options.perSystem = mkPerSystemOption {
@@ -23,13 +25,14 @@ in
     {
       evalNimiModule =
         module:
-        lib.evalModules {
-          modules = [
-            self.modules.nimi.default
-            module
-          ];
-          specialArgs = { inherit pkgs; };
-          class = "nimi";
-        };
+        builtins.addErrorContext failedToEvaluateNimiModuleError
+          (lib.evalModules {
+            modules = [
+              self.modules.nimi.default
+              module
+            ];
+            specialArgs = { inherit pkgs; };
+            class = "nimi";
+          }).config;
     };
 }

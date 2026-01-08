@@ -6,6 +6,8 @@
 let
   inherit (flake-parts-lib) mkPerSystemOption;
   inherit (lib) mkOption types;
+
+  failedToCreateNimiWrapperError = "while evaluating nimi wrapper script:";
 in
 {
   options.perSystem = mkPerSystemOption {
@@ -31,14 +33,16 @@ in
           evaluatedConfig = config.evalNimiModule module;
           cfgJson = config.toNimiJson evaluatedConfig;
         in
-        pkgs.writeShellApplication {
-          name = evaluatedConfig.config.settings.binName;
-          runtimeInputs = [ self'.packages.nimi ];
-          text = ''
-            exec nimi --config "${cfgJson}" run "$@"
-          '';
-          inherit (evaluatedConfig.config) passthru meta;
-        };
+        builtins.addErrorContext failedToCreateNimiWrapperError (
+          pkgs.writeShellApplication {
+            name = evaluatedConfig.settings.binName;
+            runtimeInputs = [ self'.packages.nimi ];
+            text = ''
+              exec nimi --config "${cfgJson}" run "$@"
+            '';
+            inherit (evaluatedConfig) passthru meta;
+          }
+        );
     };
 
 }

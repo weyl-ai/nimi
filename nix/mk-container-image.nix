@@ -6,6 +6,8 @@
 let
   inherit (flake-parts-lib) mkPerSystemOption;
   inherit (lib) mkOption types;
+
+  failedToEvaluateNimiContainerError = "while evaluating nimi OCI container configuration:";
 in
 {
   options.perSystem = mkPerSystemOption {
@@ -26,25 +28,29 @@ in
         let
           evaluatedConfig = config.evalNimiModule module;
 
-          cleanedSettings = lib.pipe evaluatedConfig.config.settings.container [
+          cleanedSettings = lib.pipe evaluatedConfig.settings.container [
             (settings: if settings.fromImage == null then removeAttrs settings [ "fromImage" ] else settings)
             (settings: removeAttrs settings [ "imageConfig" ])
           ];
+
+          imageCfg = evaluatedConfig.settings.container.imageConfig // {
+            entrypoint = [
+              (lib.getExe (config.mkNimiBin module))
+            ];
+          };
+
+          imageArgs = cleanedSettings // {
+            config = imageCfg;
+          };
+
+          image = inputs'.nix2container.packages.nix2container.buildImage imageArgs;
         in
-        (inputs'.nix2container.packages.nix2container.buildImage (
-          {
-            config = evaluatedConfig.config.settings.container.imageConfig // {
-              entrypoint = [
-                (lib.getExe (config.mkNimiBin module))
-              ];
-            };
-          }
-          // cleanedSettings
-        )).overrideAttrs
-          (oldAttrs: {
-            passthru = (oldAttrs.passthru or { }) // evaluatedConfig.config.passthru;
-            meta = (oldAttrs.meta or { }) // evaluatedConfig.config.meta;
-          });
+        builtins.addErrorContext failedToEvaluateNimiContainerError (
+          image.overrideAttrs (oldAttrs: {
+            passthru = (oldAttrs.passthru or { }) // evaluatedConfig.passthru;
+            meta = (oldAttrs.meta or { }) // evaluatedConfig.meta;
+          })
+        );
     };
 
 }

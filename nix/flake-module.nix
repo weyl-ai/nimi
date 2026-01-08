@@ -2,6 +2,9 @@
 let
   nimiInput = self;
 
+  failedToEvaluateNimiPkgsError = "while generating nimi packages:";
+  failedToEvaluateNimiChecksError = "while generating nimi checks:";
+
   flakeModule =
     { lib, flake-parts-lib, ... }:
     let
@@ -45,8 +48,8 @@ let
           ];
         in
         {
-          packages = generatedNimiPkgs;
-          checks = generatedNimiPkgs;
+          packages = builtins.addErrorContext failedToEvaluateNimiPkgsError generatedNimiPkgs;
+          checks = builtins.addErrorContext failedToEvaluateNimiChecksError generatedNimiPkgs;
         };
     };
 in
