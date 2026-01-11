@@ -1,0 +1,14 @@
+[book]
+title = "Nimi"
+authors = ["Luke Bailey"]
+description = "Tini-like PID 1 for containers and target for NixOS modular services"
+language = "en"
+src = "docs"
+
+[build]
+build-dir = "target/book"
+create-missing = true
+
+[output.html]
+git-repository-url = "https://github.com/weyl-ai/nimi"
+preferred-dark-theme = "ayu"
