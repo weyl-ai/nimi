@@ -8,19 +8,32 @@
     { nixpkgs, ... }:
     let
       inherit (nixpkgs) lib;
+
+      overlay = final: _prev: {
+        nimi = final.callPackage ./nix/package.nix {};
+      };
+
       eachSystem =
         fn:
         lib.genAttrs lib.systems.flakeExposed (
           system:
           fn {
             inherit system;
-            pkgs = nixpkgs.legacyPackages.${system};
+            pkgs = nixpkgs.legacyPackages.${system}.appendOverlays [
+              overlay
+            ];
           }
         );
     in
     {
       packages = eachSystem ({ pkgs, ... }: import ./default.nix { inherit pkgs; });
-      checks = eachSystem ({ pkgs, ... }: import ./nix/checks.nix { inherit pkgs; });
+      checks = eachSystem (
+        { pkgs, ... }:
+        lib.packagesFromDirectoryRecursive {
+          directory = ./nix/checks;
+          inherit (pkgs) callPackage;
+        }
+      );
 
       devShells = eachSystem (
         { pkgs, ... }:
@@ -29,6 +42,7 @@
         }
       );
       formatter = eachSystem ({ pkgs, ... }: pkgs.callPackage ./nix/formatter.nix { });
+      overlays.default = overlay;
     };
 
   nixConfig = {

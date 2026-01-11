@@ -3,7 +3,6 @@
   nixosOptionsDoc,
   mdbook,
   stdenvNoCC,
-  font-awesome,
   pkgs,
 }:
 let
