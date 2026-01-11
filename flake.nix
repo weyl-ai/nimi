@@ -12,14 +12,16 @@
     let
       inherit (nixpkgs) lib;
 
-      overlay = final: _prev: {
-        nimi = final.callPackage ./nix/package.nix {
-          inherit (nix2container.packages.${final.stdenv.hostPlatform.system}) nix2container;
+      overlay =
+        final: _prev:
+        let
+          inherit (final.stdenv.hostPlatform) system;
+        in
+        {
+          nimi = final.callPackage ./nix/package.nix {
+            inherit (nix2container.packages.${system}) nix2container;
+          };
         };
-      };
-      overlayFmt = final: _prev: {
-        nimi-fmt = final.callPackage ./nix/formatter.nix { };
-      };
 
       eachSystem =
         fn:
@@ -29,7 +31,6 @@
             inherit system;
             pkgs = nixpkgs.legacyPackages.${system}.appendOverlays [
               overlay
-              overlayFmt
             ];
             inherit (pkgs) callPackage;
           })
@@ -62,9 +63,9 @@
         (checksFromDir ./examples) // (checksFromDir ./nix/checks)
       );
 
-      formatter = eachSystem ({ pkgs, ... }: pkgs.nimi-fmt);
+      formatter = eachSystem ({ callPackage, ... }: callPackage ./nix/formatter.nix { });
+
       overlays.default = overlay;
-      overlays.formatter = overlayFmt;
 
       nixosModules.default = import ./nix/modules/nixos.nix;
       homeModules.default = import ./nix/modules/home-manager.nix;
