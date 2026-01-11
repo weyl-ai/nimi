@@ -1,8 +1,9 @@
 {
   lib,
   nixosOptionsDoc,
-  runCommandLocal,
-  pandoc,
+  mdbook,
+  stdenvNoCC,
+  font-awesome,
   pkgs,
 }:
 let
@@ -16,13 +17,20 @@ let
     options = moduleOpts;
   };
 in
-runCommandLocal "options-doc-html" { } ''
-  mkdir -p $out
-  ${pandoc}/bin/pandoc \
-    -f markdown \
-    -t html \
-    -s \
-    --metadata title="Module Options" \
-    -o $out/index.html \
-    ${moduleOptsDoc.optionsCommonMark}
-''
+stdenvNoCC.mkDerivation {
+  name = "options-doc-html";
+  src = ../.;
+
+  nativeBuildInputs = [
+    mdbook
+  ];
+
+  dontBuild = true;
+  installPhase = ''
+    mkdir -p "$out/share/nimi/docs"
+
+    ln -sf "${moduleOptsDoc.optionsCommonMark}" docs/options.md
+
+    mdbook build --dest-dir "$out/share/nimi/docs"
+  '';
+}
