@@ -1,6 +1,6 @@
 {
   pkgs ? import <nixpkgs> { },
-  nix2container ? import <nix2container> { },
+  nix2container ? null,
 }:
 
 rec {
