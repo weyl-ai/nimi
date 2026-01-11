@@ -1,3 +1,4 @@
+{ nix2container, ... }:
 let
   failedToEvaluateNimiPkgsError = "while generating nimi packages:";
   failedToEvaluateNimiChecksError = "while generating nimi checks:";
@@ -24,9 +25,16 @@ in
   };
 
   config.perSystem =
-    { config, pkgs, ... }:
+    {
+      config,
+      pkgs,
+      system,
+      ...
+    }:
     let
-      nimi = pkgs.callPackage ../package.nix { };
+      nimi = pkgs.callPackage ../package.nix {
+        inherit (nix2container.packages.${system}) nix2container;
+      };
 
       generatedNimiPkgs = lib.pipe config.nimi [
         (lib.mapAttrsToList (

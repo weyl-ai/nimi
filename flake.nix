@@ -21,6 +21,7 @@
           nimi = final.callPackage ./nix/package.nix {
             inherit (nix2container.packages.${system}) nix2container;
           };
+          inherit nix2container;
         };
 
       eachSystem =
@@ -67,9 +68,15 @@
 
       overlays.default = overlay;
 
-      nixosModules.default = import ./nix/modules/nixos.nix;
-      homeModules.default = import ./nix/modules/home-manager.nix;
-      flakeModules.default = import ./nix/modules/flake-parts.nix;
+      nixosModules.default = lib.modules.importApply ./nix/modules/nixos.nix {
+        inherit nix2container;
+      };
+      homeModules.default = lib.modules.importApply ./nix/modules/home-manager.nix {
+        inherit nix2container;
+      };
+      flakeModules.default = lib.modules.importApply ./nix/modules/flake-parts.nix {
+        inherit nix2container;
+      };
       nimiModules.default = import ./nix/modules/nimi.nix;
     };
 

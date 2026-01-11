@@ -1,3 +1,4 @@
+{ nix2container, ... }:
 let
   failedToEvaluateNixOSPkgsError = "while generating nimi nixos packages:";
   failedToEvaluateNixOSServicesError = "while generating nimi nixos services:";
@@ -10,7 +11,11 @@ in
 }:
 let
   inherit (lib) mkOption types;
-  nimi = pkgs.callPackage ../package.nix { };
+  inherit (pkgs.stdenv.hostPlatform) system;
+
+  nimi = pkgs.callPackage ../package.nix {
+    inherit (nix2container.packages.${system}) nix2container;
+  };
 in
 {
   _class = "nixos";

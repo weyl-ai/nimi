@@ -2,12 +2,13 @@
   testers,
   lib,
   cowsay,
+  nix2container,
 }:
 testers.runNixOSTest {
   name = "test-nimi-nixos";
   nodes.machine = {
     imports = [
-      ../modules/nixos.nix
+      (lib.modules.importApply ../modules/nixos.nix { inherit nix2container; })
     ];
 
     users.users.testUser = {
