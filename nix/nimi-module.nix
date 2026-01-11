@@ -69,7 +69,5 @@ in
     default = { };
   };
 
-  imports = [
-    # (import-tree ../nimi)
-  ];
+  imports = lib.filesystem.listFilesRecursive ./modules;
 }
