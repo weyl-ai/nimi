@@ -1,26 +1,35 @@
 {
   description = "Container PID 1 and process runner for Nix Modular Services";
 
-  inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    systems.url = "github:nix-systems/default";
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+  inputs.nix2container.url = "github:nlewo/nix2container";
 
-    flake-parts.url = "github:hercules-ci/flake-parts";
-    import-tree.url = "github:vic/import-tree";
+  outputs =
+    { nixpkgs, ... }:
+    let
+      inherit (nixpkgs) lib;
+      eachSystem =
+        fn:
+        lib.genAttrs lib.systems.flakeExposed (
+          system:
+          fn {
+            inherit system;
+            pkgs = nixpkgs.legacyPackages.${system};
+          }
+        );
+    in
+    {
+      packages = eachSystem ({ pkgs, ... }: import ./default.nix { inherit pkgs; });
+      checks = eachSystem ({ pkgs, ... }: import ./nix/checks.nix { inherit pkgs; });
 
-    treefmt-nix.url = "github:numtide/treefmt-nix";
-    treefmt-nix.inputs.nixpkgs.follows = "nixpkgs";
-
-    ndg.url = "github:feel-co/ndg";
-    ndg.inputs.nixpkgs.follows = "nixpkgs";
-
-    # TODO: revert to github:nlewo/nix2container once issue #185 is fixed
-    nix2container.url = "github:cameronraysmith/nix2container/185-skopeo-fix";
-    nix2container.inputs.nixpkgs.follows = "nixpkgs";
-
-    home-manager.url = "github:nix-community/home-manager";
-    home-manager.inputs.nixpkgs.follows = "nixpkgs";
-  };
+      devShells = eachSystem (
+        { pkgs, ... }:
+        {
+          default = import ./shell.nix { inherit pkgs; };
+        }
+      );
+      formatter = eachSystem ({ pkgs, ... }: pkgs.callPackage ./nix/formatter.nix { });
+    };
 
   nixConfig = {
     extra-substituters = [
@@ -30,13 +39,4 @@
       "weyl-ai.cachix.org-1:cR0SpSAPw7wejZ21ep4SLojE77gp5F2os260eEWqTTw="
     ];
   };
-
-  outputs =
-    inputs:
-    inputs.flake-parts.lib.mkFlake { inherit inputs; } (
-      inputs.import-tree [
-        ./nix
-        ./examples
-      ]
-    );
 }
