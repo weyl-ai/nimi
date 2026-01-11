@@ -28,6 +28,8 @@ pkgs.mkShell {
 
     podman
 
+    mdbook
+
     (lib.optional (!stdenv.isDarwin) moldHook)
   ];
 }

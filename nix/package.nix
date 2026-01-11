@@ -33,7 +33,7 @@ let
     '';
   };
 
-  defaultNimiModule = import ./nimi-module.nix { };
+  defaultNimiModule = import ./nimi-module.nix;
 
   cargoToml = fromTOML (builtins.readFile ../Cargo.toml);
 in

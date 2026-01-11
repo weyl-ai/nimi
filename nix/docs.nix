@@ -1,33 +1,28 @@
-{ self, ... }:
 {
-  perSystem =
-    { inputs', pkgs, ... }:
-    {
-      packages.docs =
-        let
-          moduleOpts = pkgs.lib.evalModules {
-            modules = [ self.modules.nimi.default ];
-          };
+  lib,
+  nixosOptionsDoc,
+  runCommandLocal,
+  pandoc,
+  pkgs,
+}:
+let
+  defaultNimiModule = lib.modules.importApply ./nimi-module.nix { inherit pkgs; };
 
-          moduleOptsDoc = pkgs.nixosOptionsDoc {
-            options = moduleOpts;
-          };
-        in
-        pkgs.runCommandLocal "nimi-docs"
-          {
-            nativeBuildInputs = [ inputs'.ndg.packages.default ];
-          }
-          ''
-            mkdir -p "$out/share/nimi/docs"
+  moduleOpts = lib.evalModules {
+    modules = [ defaultNimiModule ];
+  };
 
-            ndg html \
-              --input-dir "${self}/docs" \
-              --output-dir "$out/share/nimi/docs" \
-              --title "Nimi Documentation" \
-              --module-options ${moduleOptsDoc.optionsJSON}/share/doc/nixos/options.json \
-              --jobs $NIX_BUILD_CORES \
-              --generate-search \
-              --highlight-code
-          '';
-    };
-}
+  moduleOptsDoc = nixosOptionsDoc {
+    options = moduleOpts;
+  };
+in
+runCommandLocal "options-doc-html" { } ''
+  mkdir -p $out
+  ${pandoc}/bin/pandoc \
+    -f markdown \
+    -t html \
+    -s \
+    --metadata title="Module Options" \
+    -o $out/index.html \
+    ${moduleOptsDoc.optionsCommonMark}
+''

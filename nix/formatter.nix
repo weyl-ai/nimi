@@ -100,13 +100,7 @@ let
     };
   };
 in
-writeShellApplication {
-  name = "formatter";
-  text = ''
-    unset PRJ_ROOT
-    exec ${lib.getExe treefmt}  \
-      --config-file=${treefmtToml} \
-      --tree-root-file=flake.nix \
-      "$@"
-  '';
+treefmt.withConfig {
+  name = "nimi-formatter";
+  configFile = treefmtToml;
 }
