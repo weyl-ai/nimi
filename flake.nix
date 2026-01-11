@@ -17,17 +17,22 @@
           inherit (nix2container.packages.${final.stdenv.hostPlatform.system}) nix2container;
         };
       };
+      overlayFmt = final: _prev: {
+        nimi-fmt = final.callPackage ./nix/formatter.nix { };
+      };
 
       eachSystem =
         fn:
         lib.genAttrs lib.systems.flakeExposed (
           system:
-          fn {
+          (fn rec {
             inherit system;
             pkgs = nixpkgs.legacyPackages.${system}.appendOverlays [
               overlay
+              overlayFmt
             ];
-          }
+            inherit (pkgs) callPackage;
+          })
         );
     in
     {
@@ -38,27 +43,28 @@
           inherit (nix2container.packages.${system}) nix2container;
         }
       );
-      checks = eachSystem (
-        { pkgs, ... }:
-        let
-          checksFromDir =
-            directory:
-            lib.packagesFromDirectoryRecursive {
-              inherit (pkgs) callPackage;
-              inherit directory;
-            };
-        in
-        (checksFromDir ./examples) // (checksFromDir ./nix/checks)
-      );
-
       devShells = eachSystem (
         { pkgs, ... }:
         {
           default = import ./shell.nix { inherit pkgs; };
         }
       );
-      formatter = eachSystem ({ pkgs, ... }: pkgs.callPackage ./nix/formatter.nix { });
+
+      checks = eachSystem (
+        { callPackage, ... }:
+        let
+          checksFromDir =
+            directory:
+            lib.packagesFromDirectoryRecursive {
+              inherit callPackage directory;
+            };
+        in
+        (checksFromDir ./examples) // (checksFromDir ./nix/checks)
+      );
+
+      formatter = eachSystem ({ pkgs, ... }: pkgs.nimi-fmt);
       overlays.default = overlay;
+      overlays.formatter = overlayFmt;
     };
 
   nixConfig = {
