@@ -20,16 +20,17 @@ let
       );
 in
 pkgs.mkShell {
-  packages = with pkgs; [
-    rustc
-    cargo
-    rustfmt
-    clippy
+  packages =
+    with pkgs;
+    [
+      rustc
+      cargo
+      rustfmt
+      clippy
 
-    podman
+      podman
 
-    mdbook
-
-    (lib.optional (!stdenv.isDarwin) moldHook)
-  ];
+      mdbook
+    ]
+    ++ (lib.optional (!stdenv.isDarwin) moldHook);
 }
