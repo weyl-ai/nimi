@@ -8,9 +8,12 @@ let
 
   portable-lib = import "${pkgs.path}/nixos/modules/system/service/portable/lib.nix" { inherit lib; };
 
-  inherit (portable-lib.configure {
-    serviceManagerPkgs = pkgs;
-  }) serviceSubmodule;
+  inherit
+    (portable-lib.configure {
+      serviceManagerPkgs = pkgs;
+    })
+    serviceSubmodule
+    ;
 in
 {
   _class = "nimi";

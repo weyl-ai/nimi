@@ -6,15 +6,16 @@
   pkgs,
 }:
 let
-  moduleOpts = lib.evalModules {
+  moduleEval = lib.evalModules {
     modules = [
       ./modules/nimi.nix
     ];
+    class = "nimi";
     specialArgs = { inherit pkgs; };
   };
 
   moduleOptsDoc = nixosOptionsDoc {
-    options = moduleOpts;
+    inherit (moduleEval) options;
   };
 in
 stdenvNoCC.mkDerivation {
