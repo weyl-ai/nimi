@@ -1,8 +1,11 @@
 {
-  nimi-fmt,
   stdenvNoCC,
   git,
+  callPackage,
 }:
+let
+  nimi-fmt = callPackage ../formatter.nix { };
+in
 stdenvNoCC.mkDerivation {
   name = "nimi-fmt-check";
   src = ../..;
