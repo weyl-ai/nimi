@@ -65,6 +65,11 @@
       formatter = eachSystem ({ pkgs, ... }: pkgs.nimi-fmt);
       overlays.default = overlay;
       overlays.formatter = overlayFmt;
+
+      nixosModules.default = import ./nix/modules/nixos.nix;
+      homeModules.default = import ./nix/modules/home-manager.nix;
+      flakeModules.default = import ./nix/modules/flake-parts.nix;
+      nimiModules.default = import ./nix/modules/nimi.nix;
     };
 
   nixConfig = {

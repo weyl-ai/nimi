@@ -1,5 +1,5 @@
 {
-  pkgs ? import <nixpkgs> { },
+  pkgs,
 }:
 let
   inherit (pkgs) lib;
@@ -69,5 +69,5 @@ in
     default = { };
   };
 
-  imports = lib.filesystem.listFilesRecursive ./modules;
+  imports = lib.filesystem.listFilesRecursive ./nimi;
 }

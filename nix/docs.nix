@@ -6,7 +6,7 @@
   pkgs,
 }:
 let
-  defaultNimiModule = lib.modules.importApply ./nimi-module.nix { inherit pkgs; };
+  defaultNimiModule = lib.modules.importApply ./modules/nimi.nix { inherit pkgs; };
 
   moduleOpts = lib.evalModules {
     modules = [ defaultNimiModule ];

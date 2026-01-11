@@ -40,7 +40,7 @@ let
     '';
   };
 
-  defaultNimiModule = lib.modules.importApply ./nimi-module.nix { inherit pkgs; };
+  defaultNimiModule = lib.modules.importApply ./modules/nimi.nix { inherit pkgs; };
 
   cargoToml = fromTOML (builtins.readFile ../Cargo.toml);
 in
