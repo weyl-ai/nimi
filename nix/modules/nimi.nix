@@ -1,15 +1,16 @@
 {
   pkgs,
+  lib,
+  ...
 }:
 let
-  inherit (pkgs) lib;
   inherit (lib) mkOption types;
 
-  servicesModule =
-    lib.modules.importApply "${pkgs.path}/nixos/modules/system/service/portable/service.nix"
-      {
-        inherit pkgs;
-      };
+  portable-lib = import "${pkgs.path}/nixos/modules/system/service/portable/lib.nix" { inherit lib; };
+
+  inherit (portable-lib.configure {
+    serviceManagerPkgs = pkgs;
+  }) serviceSubmodule;
 in
 {
   _class = "nimi";
@@ -58,14 +59,7 @@ in
         };
       }
     '';
-    type = types.lazyAttrsOf (
-      types.submoduleWith {
-        class = "service";
-        modules = [
-          servicesModule
-        ];
-      }
-    );
+    type = types.lazyAttrsOf serviceSubmodule;
     default = { };
   };
 

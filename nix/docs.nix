@@ -6,10 +6,11 @@
   pkgs,
 }:
 let
-  defaultNimiModule = lib.modules.importApply ./modules/nimi.nix { inherit pkgs; };
-
   moduleOpts = lib.evalModules {
-    modules = [ defaultNimiModule ];
+    modules = [
+      ./modules/nimi.nix
+    ];
+    specialArgs = { inherit pkgs; };
   };
 
   moduleOptsDoc = nixosOptionsDoc {

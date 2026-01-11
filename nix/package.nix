@@ -40,8 +40,6 @@ let
     '';
   };
 
-  defaultNimiModule = lib.modules.importApply ./modules/nimi.nix { inherit pkgs; };
-
   cargoToml = fromTOML (builtins.readFile ../Cargo.toml);
 in
 rustPlatform.buildRustPackage (
@@ -52,7 +50,7 @@ rustPlatform.buildRustPackage (
       builtins.addErrorContext errorCtxs.failedToEvaluateNimiModule
         (lib.evalModules {
           modules = [
-            defaultNimiModule
+            ./modules/nimi.nix
             module
           ];
           specialArgs = { inherit pkgs; };
