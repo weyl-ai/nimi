@@ -8,6 +8,8 @@
 
 `Nimi` gives you a lightweight PID 1 style runtime without pulling in a full init system. It is designed to pair with the modular services model such that you can define services once and then run them in a container, VM, or anywhere a small process manager is preferred.
 
+> Take a look at the [introductory blog post](https://weyl.ai/plan/put-nix-services-anywhere/).
+
 # Usage
 
 The CLI accepts a generated config file, validates it, and runs the configured services. A single optional startup command can run before services begin. Each service is started with its own `argv`, config files are materialized into a temporary config directory, and stdout/stderr are streamed to the console. On shutdown, `Nimi` forwards the signal and waits for services to exit.
