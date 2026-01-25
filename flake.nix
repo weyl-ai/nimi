@@ -40,9 +40,13 @@
     {
       packages = eachSystem (
         { pkgs, system, ... }:
-        import ./default.nix {
+        (import ./default.nix {
           inherit pkgs;
           inherit (nix2container.packages.${system}) nix2container;
+        })
+        // {
+          # Static build for microVMs and minimal environments without glibc
+          nimi-static = pkgs.pkgsStatic.callPackage ./nix/package.nix { nix2container = null; };
         }
       );
       devShells = eachSystem (
