@@ -13,7 +13,7 @@ let
   errorCtxs = {
     failedToEvaluateNimiModule = "while evaluating nimi module set:";
     failedToEvaluateNimiContainer = "while evaluating nimi OCI container configuration:";
-    failedToEvaluateNimiMicroVM = "while evaluating nimi microvm configuration:";
+    failedToEvaluateNimiBwrap = "while evaluating nimi bubblewrap configuration:";
     failedToCreateNimiWrapper = "while evaluating nimi wrapper script:";
     failedConversionToJSON = "while serializing nimi config to json:";
   };
@@ -296,7 +296,7 @@ rec {
         lib.attrNames (image.Volumes or { })
       );
     in
-    builtins.addErrorContext errorCtxs.failedToEvaluateNimiMicroVM (writeShellApplication {
+    builtins.addErrorContext errorCtxs.failedToEvaluateNimiBwrap (writeShellApplication {
       name = "${bin.name}-sandbox";
       runtimeInputs = [ bubblewrap ];
       text = ''
