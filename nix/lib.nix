@@ -7,11 +7,13 @@
   nix2container ? null,
   dockerTools,
   writeShellApplication,
+  bubblewrap,
 }:
 let
   errorCtxs = {
     failedToEvaluateNimiModule = "while evaluating nimi module set:";
     failedToEvaluateNimiContainer = "while evaluating nimi OCI container configuration:";
+    failedToEvaluateNimiMicroVM = "while evaluating nimi microvm configuration:";
     failedToCreateNimiWrapper = "while evaluating nimi wrapper script:";
     failedConversionToJSON = "while serializing nimi config to json:";
   };
@@ -242,4 +244,146 @@ rec {
         meta = (oldAttrs.meta or { }) // evaluatedConfig.meta;
       })
     );
+
+  /**
+    Run a bubblewrap instance for a given module. This evaluates the module,
+    pops out a binary and wires it up to run inside a bubblewrap instance
+    using the container from `mkContainerImage` as the root file system.
+
+    # Example
+
+    ```nix
+    mkSandbox { settings.binName = "my-nimi"; }
+    ```
+
+    # Type
+
+    ```
+    mkSandbox :: AttrSet -> Derivation
+    ```
+
+    # Arguments
+
+    module
+    : A nimi module attrset.
+  */
+  mkSandbox =
+    module:
+    let
+      bin = mkNimiBin module;
+      evaluatedConfig = evalNimiModule module;
+      containerConfig = evaluatedConfig.settings.container;
+      inherit (containerConfig) imageConfig;
+
+      # Build a merged rootfs from copyToRoot derivations
+      rootfs = pkgs.symlinkJoin {
+        name = "${bin.name}-rootfs";
+        paths = containerConfig.copyToRoot;
+      };
+
+      # Convert imageConfig.Env (list of "KEY=VALUE" strings) to bwrap --setenv args
+      envArgs = lib.concatMap (
+        envStr:
+        let
+          parts = lib.splitString "=" envStr;
+          key = builtins.head parts;
+          value = lib.concatStringsSep "=" (builtins.tail parts);
+        in
+        [
+          "--setenv"
+          key
+          value
+        ]
+      ) (imageConfig.Env or [ ]);
+
+      # Convert imageConfig.Volumes (attrset of paths) to bwrap --tmpfs args
+      volumeArgs = lib.concatMap (path: [
+        "--tmpfs"
+        path
+      ]) (lib.attrNames (imageConfig.Volumes or { }));
+
+      # Working directory from imageConfig, default to /
+      workingDir = imageConfig.WorkingDir or "/";
+
+      bwrapArgs = lib.escapeShellArgs (
+        [
+          "--ro-bind"
+          "/nix/store"
+          "/nix/store"
+        ]
+        ++ [
+          "--dev"
+          "/dev"
+        ]
+        ++ [
+          "--proc"
+          "/proc"
+        ]
+        ++ [
+          "--tmpfs"
+          "/tmp"
+        ]
+        ++ [
+          "--tmpfs"
+          "/run"
+        ]
+        ++ [
+          "--ro-bind"
+          "/sys"
+          "/sys"
+        ]
+        ++ [
+          "--ro-bind"
+          "/etc/resolv.conf"
+          "/etc/resolv.conf"
+        ]
+        ++ [
+          "--chdir"
+          workingDir
+        ]
+        ++ [
+          "--share-net"
+          "--unshare-user"
+          "--unshare-pid"
+          "--unshare-uts"
+          "--unshare-ipc"
+          "--unshare-cgroup"
+          "--die-with-parent"
+        ]
+        ++ envArgs
+        ++ volumeArgs
+        ++ [
+          "--"
+          (lib.getExe bin)
+        ]
+      );
+    in
+    builtins.addErrorContext errorCtxs.failedToEvaluateNimiMicroVM (writeShellApplication {
+      name = "${bin.name}-sandbox";
+      runtimeInputs = [
+        bubblewrap
+        pkgs.fuse-overlayfs
+        pkgs.fuse
+      ];
+      text = ''
+        tmpdir="$(mktemp -d -t nimi-sandbox.XXXXXX)"
+        mkdir -p "$tmpdir"/{upper,work,merged}
+
+        cleanup() {
+          fusermount -uz "$tmpdir/merged" 2>/dev/null || true
+          rm -rf "$tmpdir/upper" "$tmpdir/work" 2>/dev/null || true
+          rmdir "$tmpdir/merged" "$tmpdir" 2>/dev/null || true
+        }
+
+        fuse-overlayfs -o "lowerdir=${rootfs},upperdir=$tmpdir/upper,workdir=$tmpdir/work" "$tmpdir/merged"
+
+        bwrap --bind "$tmpdir/merged" / ${bwrapArgs} &
+        pid=$!
+
+        trap 'kill -TERM $pid 2>/dev/null' INT TERM
+        wait $pid
+        sleep 0.2
+        cleanup
+      '';
+    });
 }
