@@ -5,6 +5,7 @@
 - [Config Data Files](./config-data.md)
 - [Logging](./logging.md)
 - [Containers](./container.md)
+- [Sandbox](./sandbox.md)
 - [Overlay](./overlay.md)
 - [Flake Module](./flake-module.md)
 - [NixOS Module](./nixos-module.md)

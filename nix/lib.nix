@@ -7,11 +7,13 @@
   nix2container ? null,
   dockerTools,
   writeShellApplication,
+  bubblewrap,
 }:
 let
   errorCtxs = {
     failedToEvaluateNimiModule = "while evaluating nimi module set:";
     failedToEvaluateNimiContainer = "while evaluating nimi OCI container configuration:";
+    failedToEvaluateNimiBwrap = "while evaluating nimi bubblewrap configuration:";
     failedToCreateNimiWrapper = "while evaluating nimi wrapper script:";
     failedConversionToJSON = "while serializing nimi config to json:";
   };
@@ -242,4 +244,67 @@ rec {
         meta = (oldAttrs.meta or { }) // evaluatedConfig.meta;
       })
     );
+
+  /**
+    Build a sandboxed wrapper using bubblewrap for a given nimi module.
+    This evaluates the module, creates a nimi binary, and wraps it in a
+    bubblewrap sandbox configured via `settings.bubblewrap` options.
+
+    The sandbox is configured through the module system with sensible defaults:
+    - `/nix/store` and `/sys` are read-only bound
+    - `/etc/resolv.conf` is bound with `--ro-bind-try` (skipped if missing)
+    - `/nix`, `/tmp`, `/run`, `/var`, `/etc` are tmpfs mounts
+    - `/dev` and `/proc` are bound
+    - Network is shared but user/pid/uts/ipc/cgroup namespaces are unshared
+
+    # Example
+
+    ```nix
+    mkBwrap {
+      settings.binName = "my-sandboxed-app";
+      settings.bubblewrap = {
+        environment.MY_VAR = "value";
+        roBinds = [
+          { src = "/nix/store"; dest = "/nix/store"; }
+          { src = "/data"; dest = "/data"; }
+        ];
+        tmpfs = [ "/tmp" "/run" ];
+        chdir = "/app";
+        unshare.pid = true;
+      };
+    }
+    ```
+
+    # Type
+
+    ```
+    mkBwrap :: AttrSet -> Derivation
+    ```
+
+    # Arguments
+
+    module
+    : A nimi module attrset. Configure the sandbox via `settings.bubblewrap`.
+  */
+  mkBwrap =
+    module:
+    let
+      evaluatedConfig = evalNimiModule module;
+      bin = mkNimiBin module;
+      cfg = evaluatedConfig.settings.bubblewrap;
+    in
+    builtins.addErrorContext errorCtxs.failedToEvaluateNimiBwrap (writeShellApplication {
+      name = "${bin.name}-sandbox";
+      runtimeInputs = [ bubblewrap ];
+      text = ''
+        exec bwrap \
+          ${lib.escapeShellArgs cfg.flags} \
+          -- ${lib.getExe bin} "$@"
+      '';
+
+      inherit (evaluatedConfig) passthru;
+      meta = evaluatedConfig.meta // {
+        badPlatforms = (evaluatedConfig.meta.badPlatforms or [ ]) ++ lib.platforms.darwin;
+      };
+    });
 }
