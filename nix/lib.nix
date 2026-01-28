@@ -272,56 +272,14 @@ rec {
     let
       evaluated = evalNimiModule module;
       bin = mkNimiBin module;
-      image = evaluated.settings.container.imageConfig;
-
-      rootfs = pkgs.symlinkJoin {
-        name = "${bin.name}-rootfs";
-        paths = [
-          (pkgs.runCommand "bwrap-base-dirs" { } "mkdir -p $out/{nix,dev,proc,tmp,run,var,sys,etc}")
-        ]
-        ++ evaluated.settings.container.copyToRoot;
-      };
-
-      toEnvArg =
-        envVarDef:
-        lib.pipe envVarDef [
-          (lib.splitString "=")
-          lib.escapeShellArgs
-          (args: "--setenv ${args}")
-        ];
-
-      envArgs = lib.concatMapStringsSep " " toEnvArg (image.Env or [ ]);
-
-      volumeArgs = lib.concatMapStringsSep " " (p: "--tmpfs ${lib.escapeShellArg p}") (
-        lib.attrNames (image.Volumes or { })
-      );
+      cfg = evaluated.settings.bubblewrap;
     in
     builtins.addErrorContext errorCtxs.failedToEvaluateNimiBwrap (writeShellApplication {
       name = "${bin.name}-sandbox";
       runtimeInputs = [ bubblewrap ];
       text = ''
         exec bwrap \
-          --ro-bind ${rootfs} / \
-          --tmpfs /nix \
-          --ro-bind /nix/store /nix/store \
-          --dev /dev \
-          --proc /proc \
-          --ro-bind /sys /sys \
-          --tmpfs /tmp \
-          --tmpfs /run \
-          --tmpfs /var \
-          --tmpfs /etc \
-          --ro-bind /etc/resolv.conf /etc/resolv.conf \
-          --chdir ${lib.escapeShellArg (image.WorkingDir or "/")} \
-          --share-net \
-          --unshare-user \
-          --unshare-pid \
-          --unshare-uts \
-          --unshare-ipc \
-          --unshare-cgroup \
-          --die-with-parent \
-          ${envArgs} \
-          ${volumeArgs} \
+          ${lib.escapeShellArgs cfg.flags} \
           -- ${lib.getExe bin}
       '';
       meta.badPlatforms = lib.platforms.darwin;

@@ -4,7 +4,6 @@
   testers,
   lib,
   coreutils,
-  pkgs,
 }:
 let
   verifyEnv = writeShellApplication {
@@ -50,23 +49,17 @@ let
     '';
   };
 
-  rootfs = pkgs.runCommand "sandbox-root" { } ''
-    mkdir -p $out/app $out/data
-  '';
-
   sandbox = nimi.mkBwrap {
     settings.startup.runOnStartup = lib.getExe verifyEnv;
-    settings.container = {
-      copyToRoot = [ rootfs ];
-      imageConfig = {
-        Env = [
-          "TEST_VAR=test_value"
-        ];
-        WorkingDir = "/app";
-        Volumes = {
-          "/data" = { };
-        };
+    settings.bubblewrap = {
+      environment = {
+        TEST_VAR = "test_value";
       };
+      extraTmpfs = [
+        "/data"
+        "/app"
+      ];
+      chdir = "/app";
     };
   };
 in
