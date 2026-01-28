@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "ayu";
-            window.path_to_searchindex_js = "searchindex-d0071815.js";
+            window.path_to_searchindex_js = "searchindex-eb5a0d7c.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-7f147711.js"></script>
@@ -242,11 +242,31 @@ wires the container entrypoint to the wrapper binary, and uses
 <dd>A nimi module attrset.</dd>
 </dl>
 <h2 id="niminimi.mkBwrap"><a class="header" href="#niminimi.mkBwrap"><code>nimi.mkBwrap</code></a></h2>
-<p>Run a bubblewrap instance for a given module. This evaluates the module,
-pops out a binary and wires it up to run inside a bubblewrap instance
-using the container from <code>mkContainerImage</code> as the root file system.</p>
+<p>Build a sandboxed wrapper using bubblewrap for a given nimi module.
+This evaluates the module, creates a nimi binary, and wraps it in a
+bubblewrap sandbox configured via <code>settings.bubblewrap</code> options.</p>
+<p>The sandbox is configured through the module system with sensible defaults:</p>
+<ul>
+<li><code>/nix/store</code>, <code>/sys</code>, and <code>/etc/resolv.conf</code> are read-only bound</li>
+<li><code>/nix</code>, <code>/tmp</code>, <code>/run</code>, <code>/var</code>, <code>/etc</code> are tmpfs mounts</li>
+<li><code>/dev</code> and <code>/proc</code> are bound</li>
+<li>Network is shared but user/pid/uts/ipc/cgroup namespaces are unshared</li>
+</ul>
 <h3 id="example-4"><a class="header" href="#example-4">Example</a></h3>
-<pre><code class="language-nix">mkBwrap { settings.binName = "my-nimi"; }
+<pre><code class="language-nix">mkBwrap {
+  settings.binName = "my-sandboxed-app";
+  settings.bubblewrap = {
+    environment.MY_VAR = "value";
+    roBinds = [
+      { src = "/nix/store"; dest = "/nix/store"; }
+      { src = "/data"; dest = "/data"; }
+    ];
+    tmpfs = [ "/tmp" "/run" ];
+    chdir = "/app";
+    share.net = true;
+    unshare.pid = true;
+  };
+}
 </code></pre>
 <h3 id="type-4"><a class="header" href="#type-4">Type</a></h3>
 <pre><code>mkBwrap :: AttrSet -&gt; Derivation
@@ -254,7 +274,7 @@ using the container from <code>mkContainerImage</code> as the root file system.<
 <h3 id="arguments-4"><a class="header" href="#arguments-4">Arguments</a></h3>
 <dl>
 <dt id="module-3"><a class="header" href="#module-3">module</a></dt>
-<dd>A nimi module attrset.</dd>
+<dd>A nimi module attrset. Configure the sandbox via <code>settings.bubblewrap</code>.</dd>
 </dl>
 
                     </main>
