@@ -246,14 +246,33 @@ rec {
     );
 
   /**
-    Run a bubblewrap instance for a given module. This evaluates the module,
-    pops out a binary and wires it up to run inside a bubblewrap instance
-    using the container from `mkContainerImage` as the root file system.
+    Build a sandboxed wrapper using bubblewrap for a given nimi module.
+    This evaluates the module, creates a nimi binary, and wraps it in a
+    bubblewrap sandbox configured via `settings.bubblewrap` options.
+
+    The sandbox is configured through the module system with sensible defaults:
+    - `/nix/store`, `/sys`, and `/etc/resolv.conf` are read-only bound
+    - `/nix`, `/tmp`, `/run`, `/var`, `/etc` are tmpfs mounts
+    - `/dev` and `/proc` are bound
+    - Network is shared but user/pid/uts/ipc/cgroup namespaces are unshared
 
     # Example
 
     ```nix
-    mkBwrap { settings.binName = "my-nimi"; }
+    mkBwrap {
+      settings.binName = "my-sandboxed-app";
+      settings.bubblewrap = {
+        environment.MY_VAR = "value";
+        roBinds = [
+          { src = "/nix/store"; dest = "/nix/store"; }
+          { src = "/data"; dest = "/data"; }
+        ];
+        tmpfs = [ "/tmp" "/run" ];
+        chdir = "/app";
+        share.net = true;
+        unshare.pid = true;
+      };
+    }
     ```
 
     # Type
@@ -265,7 +284,7 @@ rec {
     # Arguments
 
     module
-    : A nimi module attrset.
+    : A nimi module attrset. Configure the sandbox via `settings.bubblewrap`.
   */
   mkBwrap =
     module:

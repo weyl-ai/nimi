@@ -2,17 +2,16 @@
 
 `Nimi` provides a lightweight sandbox runner via `mkBwrap`. It uses
 [bubblewrap](https://github.com/containers/bubblewrap) to run your services in
-an isolated environment that mimics a container, without requiring container
-runtimes like Docker or Podman.
+an isolated environment without requiring container runtimes like Docker or
+Podman.
 
 ## What it provides
 
-- **Isolated filesystem**: A tmpfs-based root with your rootfs directories bound read-only.
-- **Container-like layout**: Uses `settings.container.copyToRoot` to build the root filesystem.
-- **Environment variables**: Applies `settings.container.imageConfig.Env`.
-- **Working directory**: Applies `settings.container.imageConfig.WorkingDir`.
-- **Volumes**: Mounts `settings.container.imageConfig.Volumes` as writable tmpfs.
-- **Writable directories**: `/tmp`, `/run`, and `/var` are tmpfs mounts for runtime writes.
+- **Isolated filesystem**: A tmpfs-based root with selective host paths bound read-only.
+- **Environment variables**: Set via `settings.bubblewrap.environment`.
+- **Working directory**: Set via `settings.bubblewrap.chdir`.
+- **Namespace isolation**: Separate user, PID, UTS, IPC, and cgroup namespaces by default.
+- **Writable directories**: `/tmp`, `/run`, `/var`, `/etc` are tmpfs mounts for runtime writes.
 - **Nix store access**: `/nix/store` is bind-mounted read-only so binaries can access their dependencies.
 
 ## Minimal example
@@ -22,21 +21,12 @@ pkgs.nimi.mkBwrap {
   services."my-app" = {
     process.argv = [ (lib.getExe pkgs.my-app) ];
   };
-  settings.container = {
-    copyToRoot = [
-      (pkgs.buildEnv {
-        name = "root";
-        paths = [ pkgs.coreutils pkgs.bash ];
-        pathsToLink = [ "/bin" ];
-      })
-    ];
-    imageConfig = {
-      Env = [ "MY_VAR=value" ];
-      WorkingDir = "/app";
-      Volumes = { "/data" = { }; };
-    };
+  settings.bubblewrap = {
+    environment.MY_VAR = "value";
+    chdir = "/app";
+    extraTmpfs = [ "/data" ];
   };
-};
+}
 ```
 
 Run the sandbox:
@@ -45,16 +35,39 @@ Run the sandbox:
 nix run .#my-sandbox
 ```
 
+## Extended example
+
+```nix
+pkgs.nimi.mkBwrap {
+  services."web-server" = {
+    process.argv = [ (lib.getExe pkgs.nginx) "-g" "daemon off;" ];
+  };
+  settings.bubblewrap = {
+    environment = {
+      APP_ENV = "production";
+      LOG_LEVEL = "info";
+    };
+    chdir = "/srv";
+    roBinds = [
+      { src = "/nix/store"; dest = "/nix/store"; }
+      { src = "/etc/ssl"; dest = "/etc/ssl"; }
+      { src = "/run/secrets"; dest = "/secrets"; }
+    ];
+    extraTmpfs = [ "/var/cache/nginx" ];
+    share.net = true;
+  };
+}
+```
+
 ## How it works
 
-1. **Build time**: `copyToRoot` derivations are merged into a single rootfs using `symlinkJoin`.
-1. **Execution**: `bwrap` runs the `Nimi` binary inside an isolated namespace with:
-   - A tmpfs as the root filesystem
-   - Directories from `copyToRoot` bound read-only
-   - `/nix/store` bind-mounted read-only
-   - `/tmp`, `/run`, `/var` as writable tmpfs
-   - Environment variables and working directory from `imageConfig`
-   - Volumes as tmpfs mounts
+1. **Build time**: The nimi binary is wrapped in a shell script that invokes `bwrap`.
+1. **Execution**: `bwrap` runs the nimi binary inside an isolated namespace with:
+   - Tmpfs mounts created first (providing writable areas)
+   - Read-only bind mounts layered on top (e.g., `/nix/store` over `/nix`)
+   - `/dev` and `/proc` bound from the host
+   - Environment variables and working directory applied
+   - Namespaces unshared according to configuration
 
 ## Differences from containers
 
@@ -65,11 +78,12 @@ nix run .#my-sandbox
 | Startup time | Fast (no image loading) | Depends on runtime |
 | Portability | Linux only | Any OCI-compatible runtime |
 | Base images | Not supported | Supported via `fromImage` |
-| Writable root | No (tmpfs dirs only) | Yes |
+| Root filesystem | Tmpfs with bind mounts | Layered image filesystem |
 
 ## Notes
 
 - The sandbox requires Linux with user namespaces enabled.
-- The rootfs is read-only; writes go to tmpfs directories (`/tmp`, `/run`, `/var`, and configured volumes).
+- Writes go to tmpfs directories; they are lost when the sandbox exits.
 - Signal handling (Ctrl+C) is supported.
-- The `entrypoint` is always the generated `Nimi` runner from `mkNimiBin`.
+- The entrypoint is always the generated nimi runner from `mkNimiBin`.
+- Not available on macOS (`meta.badPlatforms` includes Darwin).

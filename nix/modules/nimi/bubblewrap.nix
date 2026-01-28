@@ -9,39 +9,74 @@ in
 
   options.settings.bubblewrap = mkOption {
     description = ''
-      Configures nimi's builtin bubblewrap script generator.
+      Sandbox configuration for running nimi inside bubblewrap.
 
-      Note that none of these options will have any effect unless you are using
-      `nimi.mkBwrap` to build your containers.
+      Use this to isolate the nimi process manager and its services from the
+      host system. Bubblewrap provides lightweight containerization through
+      Linux namespaces without requiring root privileges or a container runtime.
+
+      The defaults provide a minimal sandbox that can access the Nix store and
+      network while isolating the process namespace, filesystem writes, and
+      other system resources. Adjust these settings based on what your services
+      actually need.
+
+      Note that these options only take effect when using `nimi.mkBwrap` to
+      build your sandboxed binary.
+    '';
+    example = lib.literalExpression ''
+      {
+        environment.APP_ENV = "production";
+        chdir = "/app";
+        roBinds = [
+          { src = "/nix/store"; dest = "/nix/store"; }
+          { src = "/etc/ssl"; dest = "/etc/ssl"; }
+        ];
+        extraTmpfs = [ "/app/cache" ];
+        share.net = true;
+      }
     '';
     type = types.submodule {
       options = {
         environment = mkOption {
           description = ''
-            An attribute set of environment variables to set via
-            `--setenv` in bubblewrap.
+            Environment variables to set inside the sandbox.
+
+            These are passed to bubblewrap via `--setenv` and are available to
+            the nimi process manager and all services it spawns. Variable names
+            must be uppercase.
           '';
           type = types.lazyAttrsOf types.str;
           default = { };
+          example = lib.literalExpression ''
+            {
+              APP_ENV = "production";
+              LOG_LEVEL = "info";
+            }
+          '';
         };
         roBinds = mkOption {
           description = ''
-            Read only binds to allow access to in the
-            bubblewrap instance.
+            Read-only bind mounts from the host into the sandbox.
+
+            Each entry maps a host path (`src`) to a path inside the sandbox
+            (`dest`). The sandbox can read these paths but not modify them.
+
+            The default includes `/nix/store` (required for Nix binaries),
+            `/sys` (for system information), and `/etc/resolv.conf` (for DNS).
+            Override this list carefully; omitting `/nix/store` will break
+            most Nix-built programs.
           '';
           type = types.listOf (
             types.submodule {
               options.src = mkOption {
-                description = ''
-                  Source directory to allow access to in bubblewrap.
-                '';
+                description = "Host path to bind into the sandbox.";
                 type = types.str;
+                example = "/nix/store";
               };
               options.dest = mkOption {
-                description = ''
-                  Destination directory as it would appear inside bubblewrap.
-                '';
+                description = "Path inside the sandbox where `src` appears.";
                 type = types.str;
+                example = "/nix/store";
               };
             }
           );
@@ -59,12 +94,26 @@ in
               dest = "/etc/resolv.conf";
             }
           ];
+          example = lib.literalExpression ''
+            [
+              { src = "/nix/store"; dest = "/nix/store"; }
+              { src = "/etc/ssl"; dest = "/etc/ssl"; }
+              { src = "/run/secrets"; dest = "/secrets"; }
+            ]
+          '';
         };
         tmpfs = mkOption {
           description = ''
-            Temporary filesystems to create in order to
-            allow writing files inside bubblewrap
-            that do not persist outside of the instance
+            Paths to mount as temporary filesystems inside the sandbox.
+
+            These mounts are writable but ephemeral; contents are lost when the
+            sandbox exits. They also hide any host content at the same path.
+
+            The default list creates writable areas for common system paths
+            while keeping the sandbox isolated. The `/nix` tmpfs is mounted
+            first, then `/nix/store` is bind-mounted on top, allowing writes
+            elsewhere under `/nix` (like `/nix/var`) without touching the
+            real store.
           '';
           type = types.listOf types.str;
           default = [
@@ -74,80 +123,109 @@ in
             "/var"
             "/etc"
           ];
+          example = lib.literalExpression ''
+            [ "/tmp" "/run" ]
+          '';
         };
         extraTmpfs = mkOption {
           description = ''
-            Extra temporary filesystems to concat
-            to the default list
+            Additional tmpfs mounts appended to the default list.
+
+            Use this to add writable scratch directories without replacing
+            the standard set. For complete control, override `tmpfs` directly.
           '';
           type = types.listOf types.str;
           default = [ ];
+          example = lib.literalExpression ''
+            [ "/app/cache" "/app/tmp" ]
+          '';
         };
         bind = {
-          dev = mkEnableOption "If /dev should be bound" // {
+          dev = mkEnableOption "bind /dev into the sandbox" // {
             default = true;
           };
-          proc = mkEnableOption "If /proc should be bound" // {
+          proc = mkEnableOption "bind /proc into the sandbox" // {
             default = true;
           };
         };
-        share.net = mkEnableOption "If the network should be shared with the host" // {
-          default = true;
+        share = {
+          net = mkEnableOption "share the host network namespace with the sandbox" // {
+            default = true;
+          };
         };
         unshare = {
-          user = mkEnableOption "If the user should be unshared with the host" // {
+          user = mkEnableOption "create a new user namespace" // {
             default = true;
           };
-          pid = mkEnableOption "If the pid should be unshared with the host" // {
+          pid = mkEnableOption "create a new PID namespace" // {
             default = true;
           };
-          uts = mkEnableOption "If the uts should be unshared with the host" // {
+          uts = mkEnableOption "create a new UTS (hostname) namespace" // {
             default = true;
           };
-          ipc = mkEnableOption "If the ipc should be unshared with the host" // {
+          ipc = mkEnableOption "create a new IPC namespace" // {
             default = true;
           };
-          cgroup = mkEnableOption "If the cgroup should be unshared with the host" // {
+          cgroup = mkEnableOption "create a new cgroup namespace" // {
             default = true;
           };
-          net = mkEnableOption "If the network should be unshared with the host" // {
+          net = mkEnableOption "create a new network namespace" // {
             default = true;
           };
         };
-        dieWithParent = mkEnableOption "If the instance should die with it's parent" // {
+        dieWithParent = mkEnableOption "terminate sandbox when parent process exits" // {
           default = true;
         };
         chdir = mkOption {
           description = ''
-            Optional directory to change to with `--chdir`
+            Working directory to change to after entering the sandbox.
+
+            Set this to control where services start. When `null`, bubblewrap
+            does not change directory and the process inherits the caller's
+            working directory (usually `/`).
           '';
           type = types.nullOr types.str;
           default = null;
+          example = lib.literalExpression ''"/app"'';
         };
         flags = mkOption {
           description = ''
-            The list of flags to pass to the `bwrap` executable
-            to configure how bubblewrap gets started.
+            Final list of flags passed to the `bwrap` executable.
 
-            Warning: by default this is what the other config
-            options become. Settings this may have unintended consequences.
+            This is computed automatically from the other options in this
+            module. You can read it to inspect the generated command line, but
+            setting it directly replaces the generated flags entirely and may
+            break the sandbox. Prefer `prependFlags` or `appendFlags` to inject
+            custom arguments.
           '';
           type = types.listOf types.str;
           default = [ ];
         };
         appendFlags = mkOption {
           description = ''
-            Flags to append at the end of the bubblewrap invocation.
+            Extra flags appended after the generated bubblewrap arguments.
+
+            Use this for one-off bwrap options not covered by the module.
+            These appear at the end of the command line, just before `--`.
           '';
           type = types.listOf types.str;
           default = [ ];
+          example = lib.literalExpression ''
+            [ "--cap-add" "CAP_NET_BIND_SERVICE" ]
+          '';
         };
         prependFlags = mkOption {
           description = ''
-            Flags to prepend at the start of the bubblewrap invocation.
+            Extra flags inserted before the generated bubblewrap arguments.
+
+            Use this when argument order matters, for example to set options
+            that must appear early in the bwrap invocation.
           '';
           type = types.listOf types.str;
           default = [ ];
+          example = lib.literalExpression ''
+            [ "--clearenv" ]
+          '';
         };
       };
     };
