@@ -36,7 +36,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "ayu";
-            window.path_to_searchindex_js = "searchindex-9949701e.js";
+            window.path_to_searchindex_js = "searchindex-0df1d89b.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-7f147711.js"></script>
@@ -359,22 +359,22 @@ files.</p>
 </ul>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="sandbox"><a class="header" href="#sandbox">Sandbox</a></h1>
-<p><code>Nimi</code> provides a lightweight sandbox runner via <code>mkSandbox</code>. It uses
-<a href="https://github.com/containers/bubblewrap">bubblewrap</a> and
-<a href="https://github.com/containers/fuse-overlayfs">fuse-overlayfs</a> to run your
-services in an isolated environment that mimics a container, without requiring
-container runtimes like Docker or Podman.</p>
+<p><code>Nimi</code> provides a lightweight sandbox runner via <code>mkBwrap</code>. It uses
+<a href="https://github.com/containers/bubblewrap">bubblewrap</a> to run your services in
+an isolated environment that mimics a container, without requiring container
+runtimes like Docker or Podman.</p>
 <h2 id="what-it-provides"><a class="header" href="#what-it-provides">What it provides</a></h2>
 <ul>
-<li><strong>Isolated filesystem</strong>: A copy-on-write overlay where writes are discarded on exit.</li>
+<li><strong>Isolated filesystem</strong>: A tmpfs-based root with your rootfs directories bound read-only.</li>
 <li><strong>Container-like layout</strong>: Uses <code>settings.container.copyToRoot</code> to build the root filesystem.</li>
 <li><strong>Environment variables</strong>: Applies <code>settings.container.imageConfig.Env</code>.</li>
 <li><strong>Working directory</strong>: Applies <code>settings.container.imageConfig.WorkingDir</code>.</li>
 <li><strong>Volumes</strong>: Mounts <code>settings.container.imageConfig.Volumes</code> as writable tmpfs.</li>
+<li><strong>Writable directories</strong>: <code>/tmp</code>, <code>/run</code>, and <code>/var</code> are tmpfs mounts for runtime writes.</li>
 <li><strong>Nix store access</strong>: <code>/nix/store</code> is bind-mounted read-only so binaries can access their dependencies.</li>
 </ul>
 <h2 id="minimal-example-1"><a class="header" href="#minimal-example-1">Minimal example</a></h2>
-<pre><code class="language-nix">pkgs.nimi.mkSandbox {
+<pre><code class="language-nix">pkgs.nimi.mkBwrap {
   services."my-app" = {
     process.argv = [ (lib.getExe pkgs.my-app) ];
   };
@@ -400,37 +400,38 @@ container runtimes like Docker or Podman.</p>
 <h2 id="how-it-works"><a class="header" href="#how-it-works">How it works</a></h2>
 <ol>
 <li><strong>Build time</strong>: <code>copyToRoot</code> derivations are merged into a single rootfs using <code>symlinkJoin</code>.</li>
-<li><strong>Runtime</strong>: <code>fuse-overlayfs</code> creates a copy-on-write layer over the rootfs.</li>
-<li><strong>Execution</strong>: <code>bwrap</code> runs the <code>Nimi</code> binary inside the isolated namespace with:
+<li><strong>Execution</strong>: <code>bwrap</code> runs the <code>Nimi</code> binary inside an isolated namespace with:
 <ul>
-<li>The overlay mounted as <code>/</code></li>
+<li>A tmpfs as the root filesystem</li>
+<li>Directories from <code>copyToRoot</code> bound read-only</li>
 <li><code>/nix/store</code> bind-mounted read-only</li>
+<li><code>/tmp</code>, <code>/run</code>, <code>/var</code> as writable tmpfs</li>
 <li>Environment variables and working directory from <code>imageConfig</code></li>
-<li>Volumes as <code>tmpfs</code> mounts</li>
+<li>Volumes as tmpfs mounts</li>
 </ul>
 </li>
-<li><strong>Cleanup</strong>: On exit, the overlay is unmounted and temporary files are removed.</li>
 </ol>
 <h2 id="differences-from-containers"><a class="header" href="#differences-from-containers">Differences from containers</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
-<tr><th>Feature</th><th><code>mkSandbox</code></th><th><code>mkContainerImage</code></th></tr>
+<tr><th>Feature</th><th><code>mkBwrap</code></th><th><code>mkContainerImage</code></th></tr>
 </thead>
 <tbody>
-<tr><td>Runtime dependencies</td><td><code>bubblewrap</code>, <code>fuse-overlayfs</code></td><td>Container runtime (Docker, Pod-man)</td></tr>
+<tr><td>Runtime dependencies</td><td><code>bubblewrap</code> only</td><td>Container runtime (Docker, Podman)</td></tr>
 <tr><td>Image format</td><td>None (uses Nix store directly)</td><td>OCI image</td></tr>
 <tr><td>Startup time</td><td>Fast (no image loading)</td><td>Depends on runtime</td></tr>
 <tr><td>Portability</td><td>Linux only</td><td>Any OCI-compatible runtime</td></tr>
-<tr><td>Base images</td><td>No support</td><td>Supported via <code>fromImage</code></td></tr>
+<tr><td>Base images</td><td>Not supported</td><td>Supported via <code>fromImage</code></td></tr>
+<tr><td>Writable root</td><td>No (tmpfs dirs only)</td><td>Yes</td></tr>
 </tbody>
 </table>
 </div>
 <h2 id="notes-2"><a class="header" href="#notes-2">Notes</a></h2>
 <ul>
-<li>The sandbox requires Linux with FUSE support.</li>
-<li>Writes inside the sandbox are isolated and do not affect the host or Nix store.</li>
-<li>Signal handling (Ctrl+C) is supported and cleanly terminates the sandbox.</li>
+<li>The sandbox requires Linux with user namespaces enabled.</li>
+<li>The rootfs is read-only; writes go to tmpfs directories (<code>/tmp</code>, <code>/run</code>, <code>/var</code>, and configured volumes).</li>
+<li>Signal handling (Ctrl+C) is supported.</li>
 <li>The <code>entrypoint</code> is always the generated <code>Nimi</code> runner from <code>mkNimiBin</code>.</li>
 </ul>
 <div style="break-before: page; page-break-before: always;"></div>
@@ -630,15 +631,15 @@ wires the container entrypoint to the wrapper binary, and uses
 <dt id="module-2"><a class="header" href="#module-2">module</a></dt>
 <dd>A nimi module attrset.</dd>
 </dl>
-<h2 id="niminimi.mkSandbox"><a class="header" href="#niminimi.mkSandbox"><code>nimi.mkSandbox</code></a></h2>
+<h2 id="niminimi.mkBwrap"><a class="header" href="#niminimi.mkBwrap"><code>nimi.mkBwrap</code></a></h2>
 <p>Run a bubblewrap instance for a given module. This evaluates the module,
 pops out a binary and wires it up to run inside a bubblewrap instance
 using the container from <code>mkContainerImage</code> as the root file system.</p>
 <h3 id="example-4"><a class="header" href="#example-4">Example</a></h3>
-<pre><code class="language-nix">mkSandbox { settings.binName = "my-nimi"; }
+<pre><code class="language-nix">mkBwrap { settings.binName = "my-nimi"; }
 </code></pre>
 <h3 id="type-4"><a class="header" href="#type-4">Type</a></h3>
-<pre><code>mkSandbox :: AttrSet -&gt; Derivation
+<pre><code>mkBwrap :: AttrSet -&gt; Derivation
 </code></pre>
 <h3 id="arguments-4"><a class="header" href="#arguments-4">Arguments</a></h3>
 <dl>
@@ -710,7 +711,7 @@ lazy attribute set of raw value</p>
 boolean</p>
 <p><em>Declared by:</em></p>
 <ul>
-<li><a href="file:///nix/store/k5277h9r78vlygdwc6f4kkirnqqpwg1i-source/nix/modules/nimi/assertions.nix">/nix/store/k5277h9r78vlygdwc6f4kkirnqqpwg1i-source/nix/modules/nimi/assertions.nix</a></li>
+<li><a href="file:///nix/store/752hzzmw17mjmcvpszc442bvd5mr7rck-source/nix/modules/nimi/assertions.nix">/nix/store/752hzzmw17mjmcvpszc442bvd5mr7rck-source/nix/modules/nimi/assertions.nix</a></li>
 </ul>
 <h2 id="assertionsmessage"><a class="header" href="#assertionsmessage">assertions.*.message</a></h2>
 <p>Message to print on assertion failure.</p>
@@ -718,7 +719,7 @@ boolean</p>
 string</p>
 <p><em>Declared by:</em></p>
 <ul>
-<li><a href="file:///nix/store/k5277h9r78vlygdwc6f4kkirnqqpwg1i-source/nix/modules/nimi/assertions.nix">/nix/store/k5277h9r78vlygdwc6f4kkirnqqpwg1i-source/nix/modules/nimi/assertions.nix</a></li>
+<li><a href="file:///nix/store/752hzzmw17mjmcvpszc442bvd5mr7rck-source/nix/modules/nimi/assertions.nix">/nix/store/752hzzmw17mjmcvpszc442bvd5mr7rck-source/nix/modules/nimi/assertions.nix</a></li>
 </ul>
 <h2 id="meta"><a class="header" href="#meta">meta</a></h2>
 <p><a href="https://ryantm.github.io/nixpkgs/stdenv/meta/"><code>meta</code></a> attributes to
@@ -737,7 +738,7 @@ lazy attribute set of raw value</p>
 </code></pre>
 <p><em>Declared by:</em></p>
 <ul>
-<li><a href="file:///nix/store/k5277h9r78vlygdwc6f4kkirnqqpwg1i-source/nix/modules/nimi/meta.nix">/nix/store/k5277h9r78vlygdwc6f4kkirnqqpwg1i-source/nix/modules/nimi/meta.nix</a></li>
+<li><a href="file:///nix/store/752hzzmw17mjmcvpszc442bvd5mr7rck-source/nix/modules/nimi/meta.nix">/nix/store/752hzzmw17mjmcvpszc442bvd5mr7rck-source/nix/modules/nimi/meta.nix</a></li>
 </ul>
 <h2 id="passthru"><a class="header" href="#passthru">passthru</a></h2>
 <p><a href="https://ryantm.github.io/nixpkgs/stdenv/stdenv/#var-stdenv-passthru"><code>passthru</code></a> attributes to
@@ -761,7 +762,7 @@ lazy attribute set of raw value</p>
 </code></pre>
 <p><em>Declared by:</em></p>
 <ul>
-<li><a href="file:///nix/store/k5277h9r78vlygdwc6f4kkirnqqpwg1i-source/nix/modules/nimi/passthru.nix">/nix/store/k5277h9r78vlygdwc6f4kkirnqqpwg1i-source/nix/modules/nimi/passthru.nix</a></li>
+<li><a href="file:///nix/store/752hzzmw17mjmcvpszc442bvd5mr7rck-source/nix/modules/nimi/passthru.nix">/nix/store/752hzzmw17mjmcvpszc442bvd5mr7rck-source/nix/modules/nimi/passthru.nix</a></li>
 </ul>
 <h2 id="services"><a class="header" href="#services">services</a></h2>
 <p>Services to run inside the nimi runtime.</p>
@@ -809,7 +810,7 @@ lazy attribute set of (submodule)</p>
 </code></pre>
 <p><em>Declared by:</em></p>
 <ul>
-<li><a href="file:///nix/store/k5277h9r78vlygdwc6f4kkirnqqpwg1i-source/nix/modules/nimi.nix">/nix/store/k5277h9r78vlygdwc6f4kkirnqqpwg1i-source/nix/modules/nimi.nix</a></li>
+<li><a href="file:///nix/store/752hzzmw17mjmcvpszc442bvd5mr7rck-source/nix/modules/nimi.nix">/nix/store/752hzzmw17mjmcvpszc442bvd5mr7rck-source/nix/modules/nimi.nix</a></li>
 </ul>
 <h2 id="servicesnameconfigdata"><a class="header" href="#servicesnameconfigdata">services.&lt;name&gt;.configData</a></h2>
 <p>Configuration data files for the service</p>
@@ -942,7 +943,7 @@ string</p>
 </code></pre>
 <p><em>Declared by:</em></p>
 <ul>
-<li><a href="file:///nix/store/k5277h9r78vlygdwc6f4kkirnqqpwg1i-source/nix/modules/nimi/bin-name.nix">/nix/store/k5277h9r78vlygdwc6f4kkirnqqpwg1i-source/nix/modules/nimi/bin-name.nix</a></li>
+<li><a href="file:///nix/store/752hzzmw17mjmcvpszc442bvd5mr7rck-source/nix/modules/nimi/bin-name.nix">/nix/store/752hzzmw17mjmcvpszc442bvd5mr7rck-source/nix/modules/nimi/bin-name.nix</a></li>
 </ul>
 <h2 id="settingscontainer"><a class="header" href="#settingscontainer">settings.container</a></h2>
 <p>Configures nimi’s builtin container generation.</p>
@@ -956,7 +957,7 @@ submodule</p>
 <code>{ }</code></p>
 <p><em>Declared by:</em></p>
 <ul>
-<li><a href="file:///nix/store/k5277h9r78vlygdwc6f4kkirnqqpwg1i-source/nix/modules/nimi/container.nix">/nix/store/k5277h9r78vlygdwc6f4kkirnqqpwg1i-source/nix/modules/nimi/container.nix</a></li>
+<li><a href="file:///nix/store/752hzzmw17mjmcvpszc442bvd5mr7rck-source/nix/modules/nimi/container.nix">/nix/store/752hzzmw17mjmcvpszc442bvd5mr7rck-source/nix/modules/nimi/container.nix</a></li>
 </ul>
 <h2 id="settingscontainercopytoroot"><a class="header" href="#settingscontainercopytoroot">settings.container.copyToRoot</a></h2>
 <p>A derivation (or list of derivations) copied in the image root directory
@@ -971,7 +972,7 @@ coreutils in the image <code>/bin</code>:</p>
 <code>[ ]</code></p>
 <p><em>Declared by:</em></p>
 <ul>
-<li><a href="file:///nix/store/k5277h9r78vlygdwc6f4kkirnqqpwg1i-source/nix/modules/nimi/container.nix">/nix/store/k5277h9r78vlygdwc6f4kkirnqqpwg1i-source/nix/modules/nimi/container.nix</a></li>
+<li><a href="file:///nix/store/752hzzmw17mjmcvpszc442bvd5mr7rck-source/nix/modules/nimi/container.nix">/nix/store/752hzzmw17mjmcvpszc442bvd5mr7rck-source/nix/modules/nimi/container.nix</a></li>
 </ul>
 <h2 id="settingscontainerfromimage"><a class="header" href="#settingscontainerfromimage">settings.container.fromImage</a></h2>
 <p>An image that is used as base image of this image;</p>
@@ -982,17 +983,24 @@ null or path in the Nix store</p>
 <code>null</code></p>
 <p><em>Declared by:</em></p>
 <ul>
-<li><a href="file:///nix/store/k5277h9r78vlygdwc6f4kkirnqqpwg1i-source/nix/modules/nimi/container.nix">/nix/store/k5277h9r78vlygdwc6f4kkirnqqpwg1i-source/nix/modules/nimi/container.nix</a></li>
+<li><a href="file:///nix/store/752hzzmw17mjmcvpszc442bvd5mr7rck-source/nix/modules/nimi/container.nix">/nix/store/752hzzmw17mjmcvpszc442bvd5mr7rck-source/nix/modules/nimi/container.nix</a></li>
 </ul>
 <h2 id="settingscontainerimageconfig"><a class="header" href="#settingscontainerimageconfig">settings.container.imageConfig</a></h2>
 <p>An attribute set describing an image configuration as defined in the <a href="https://github.com/opencontainers/image-spec/blob/8b9d41f48198a7d6d0a5c1a12dc2d1f7f47fc97f/specs-go/v1/config.go#L23">OCI image specification</a>.</p>
 <p><em>Type:</em>
 open submodule of lazy attribute set of anything</p>
-<p><em>Default:</em>
-<code>{ }</code></p>
+<p><em>Default:</em></p>
+<pre><code>{
+  WorkingDir = {
+    _type = "override";
+    content = "/root";
+    priority = 1000;
+  };
+}
+</code></pre>
 <p><em>Declared by:</em></p>
 <ul>
-<li><a href="file:///nix/store/k5277h9r78vlygdwc6f4kkirnqqpwg1i-source/nix/modules/nimi/container.nix">/nix/store/k5277h9r78vlygdwc6f4kkirnqqpwg1i-source/nix/modules/nimi/container.nix</a></li>
+<li><a href="file:///nix/store/752hzzmw17mjmcvpszc442bvd5mr7rck-source/nix/modules/nimi/container.nix">/nix/store/752hzzmw17mjmcvpszc442bvd5mr7rck-source/nix/modules/nimi/container.nix</a></li>
 </ul>
 <h2 id="settingscontainerinitializenixdatabase"><a class="header" href="#settingscontainerinitializenixdatabase">settings.container.initializeNixDatabase</a></h2>
 <p>To initialize the Nix database with all store paths added into the image.</p>
@@ -1004,7 +1012,7 @@ boolean</p>
 <code>false</code></p>
 <p><em>Declared by:</em></p>
 <ul>
-<li><a href="file:///nix/store/k5277h9r78vlygdwc6f4kkirnqqpwg1i-source/nix/modules/nimi/container.nix">/nix/store/k5277h9r78vlygdwc6f4kkirnqqpwg1i-source/nix/modules/nimi/container.nix</a></li>
+<li><a href="file:///nix/store/752hzzmw17mjmcvpszc442bvd5mr7rck-source/nix/modules/nimi/container.nix">/nix/store/752hzzmw17mjmcvpszc442bvd5mr7rck-source/nix/modules/nimi/container.nix</a></li>
 </ul>
 <h2 id="settingscontainerlayers"><a class="header" href="#settingscontainerlayers">settings.container.layers</a></h2>
 <p>A list of layers built with the <code>nix2container.buildLayer</code> function.</p>
@@ -1017,7 +1025,7 @@ list of path in the Nix store</p>
 <code>[ ]</code></p>
 <p><em>Declared by:</em></p>
 <ul>
-<li><a href="file:///nix/store/k5277h9r78vlygdwc6f4kkirnqqpwg1i-source/nix/modules/nimi/container.nix">/nix/store/k5277h9r78vlygdwc6f4kkirnqqpwg1i-source/nix/modules/nimi/container.nix</a></li>
+<li><a href="file:///nix/store/752hzzmw17mjmcvpszc442bvd5mr7rck-source/nix/modules/nimi/container.nix">/nix/store/752hzzmw17mjmcvpszc442bvd5mr7rck-source/nix/modules/nimi/container.nix</a></li>
 </ul>
 <h2 id="settingscontainermaxlayers"><a class="header" href="#settingscontainermaxlayers">settings.container.maxLayers</a></h2>
 <p>The maximum number of layers to create.</p>
@@ -1029,7 +1037,7 @@ positive integer, meaning &gt;0</p>
 <code>1</code></p>
 <p><em>Declared by:</em></p>
 <ul>
-<li><a href="file:///nix/store/k5277h9r78vlygdwc6f4kkirnqqpwg1i-source/nix/modules/nimi/container.nix">/nix/store/k5277h9r78vlygdwc6f4kkirnqqpwg1i-source/nix/modules/nimi/container.nix</a></li>
+<li><a href="file:///nix/store/752hzzmw17mjmcvpszc442bvd5mr7rck-source/nix/modules/nimi/container.nix">/nix/store/752hzzmw17mjmcvpszc442bvd5mr7rck-source/nix/modules/nimi/container.nix</a></li>
 </ul>
 <h2 id="settingscontainername"><a class="header" href="#settingscontainername">settings.container.name</a></h2>
 <p>The name of the generated image</p>
@@ -1039,7 +1047,7 @@ string</p>
 <code>"nimi-container"</code></p>
 <p><em>Declared by:</em></p>
 <ul>
-<li><a href="file:///nix/store/k5277h9r78vlygdwc6f4kkirnqqpwg1i-source/nix/modules/nimi/container.nix">/nix/store/k5277h9r78vlygdwc6f4kkirnqqpwg1i-source/nix/modules/nimi/container.nix</a></li>
+<li><a href="file:///nix/store/752hzzmw17mjmcvpszc442bvd5mr7rck-source/nix/modules/nimi/container.nix">/nix/store/752hzzmw17mjmcvpszc442bvd5mr7rck-source/nix/modules/nimi/container.nix</a></li>
 </ul>
 <h2 id="settingscontainerperms"><a class="header" href="#settingscontainerperms">settings.container.perms</a></h2>
 <p>A list of file permisssions which are set when the tar layer is created: these permissions are not written to the Nix store.</p>
@@ -1049,7 +1057,7 @@ list of (submodule)</p>
 <code>[ ]</code></p>
 <p><em>Declared by:</em></p>
 <ul>
-<li><a href="file:///nix/store/k5277h9r78vlygdwc6f4kkirnqqpwg1i-source/nix/modules/nimi/container.nix">/nix/store/k5277h9r78vlygdwc6f4kkirnqqpwg1i-source/nix/modules/nimi/container.nix</a></li>
+<li><a href="file:///nix/store/752hzzmw17mjmcvpszc442bvd5mr7rck-source/nix/modules/nimi/container.nix">/nix/store/752hzzmw17mjmcvpszc442bvd5mr7rck-source/nix/modules/nimi/container.nix</a></li>
 </ul>
 <h2 id="settingscontainertag"><a class="header" href="#settingscontainertag">settings.container.tag</a></h2>
 <p>The tag for the generated image to use</p>
@@ -1059,7 +1067,7 @@ string</p>
 <code>"latest"</code></p>
 <p><em>Declared by:</em></p>
 <ul>
-<li><a href="file:///nix/store/k5277h9r78vlygdwc6f4kkirnqqpwg1i-source/nix/modules/nimi/container.nix">/nix/store/k5277h9r78vlygdwc6f4kkirnqqpwg1i-source/nix/modules/nimi/container.nix</a></li>
+<li><a href="file:///nix/store/752hzzmw17mjmcvpszc442bvd5mr7rck-source/nix/modules/nimi/container.nix">/nix/store/752hzzmw17mjmcvpszc442bvd5mr7rck-source/nix/modules/nimi/container.nix</a></li>
 </ul>
 <h2 id="settingslogging"><a class="header" href="#settingslogging">settings.logging</a></h2>
 <p>Logging behavior for the nimi process manager.</p>
@@ -1083,7 +1091,7 @@ submodule</p>
 </code></pre>
 <p><em>Declared by:</em></p>
 <ul>
-<li><a href="file:///nix/store/k5277h9r78vlygdwc6f4kkirnqqpwg1i-source/nix/modules/nimi/logging.nix">/nix/store/k5277h9r78vlygdwc6f4kkirnqqpwg1i-source/nix/modules/nimi/logging.nix</a></li>
+<li><a href="file:///nix/store/752hzzmw17mjmcvpszc442bvd5mr7rck-source/nix/modules/nimi/logging.nix">/nix/store/752hzzmw17mjmcvpszc442bvd5mr7rck-source/nix/modules/nimi/logging.nix</a></li>
 </ul>
 <h2 id="settingsloggingenable"><a class="header" href="#settingsloggingenable">settings.logging.enable</a></h2>
 <p>Whether to enable If per-service log files should be written to <code>settings.logging.logsDir</code>.</p>
@@ -1098,7 +1106,7 @@ boolean</p>
 <code>true</code></p>
 <p><em>Declared by:</em></p>
 <ul>
-<li><a href="file:///nix/store/k5277h9r78vlygdwc6f4kkirnqqpwg1i-source/nix/modules/nimi/logging.nix">/nix/store/k5277h9r78vlygdwc6f4kkirnqqpwg1i-source/nix/modules/nimi/logging.nix</a></li>
+<li><a href="file:///nix/store/752hzzmw17mjmcvpszc442bvd5mr7rck-source/nix/modules/nimi/logging.nix">/nix/store/752hzzmw17mjmcvpszc442bvd5mr7rck-source/nix/modules/nimi/logging.nix</a></li>
 </ul>
 <h2 id="settingslogginglogsdir"><a class="header" href="#settingslogginglogsdir">settings.logging.logsDir</a></h2>
 <p>Directory to create and write per-service logs to.</p>
@@ -1110,7 +1118,7 @@ string</p>
 <code>"nimi_logs"</code></p>
 <p><em>Declared by:</em></p>
 <ul>
-<li><a href="file:///nix/store/k5277h9r78vlygdwc6f4kkirnqqpwg1i-source/nix/modules/nimi/logging.nix">/nix/store/k5277h9r78vlygdwc6f4kkirnqqpwg1i-source/nix/modules/nimi/logging.nix</a></li>
+<li><a href="file:///nix/store/752hzzmw17mjmcvpszc442bvd5mr7rck-source/nix/modules/nimi/logging.nix">/nix/store/752hzzmw17mjmcvpszc442bvd5mr7rck-source/nix/modules/nimi/logging.nix</a></li>
 </ul>
 <h2 id="settingsrestart"><a class="header" href="#settingsrestart">settings.restart</a></h2>
 <p>Restart policy for the nimi process manager.</p>
@@ -1134,7 +1142,7 @@ submodule</p>
 </code></pre>
 <p><em>Declared by:</em></p>
 <ul>
-<li><a href="file:///nix/store/k5277h9r78vlygdwc6f4kkirnqqpwg1i-source/nix/modules/nimi/restart.nix">/nix/store/k5277h9r78vlygdwc6f4kkirnqqpwg1i-source/nix/modules/nimi/restart.nix</a></li>
+<li><a href="file:///nix/store/752hzzmw17mjmcvpszc442bvd5mr7rck-source/nix/modules/nimi/restart.nix">/nix/store/752hzzmw17mjmcvpszc442bvd5mr7rck-source/nix/modules/nimi/restart.nix</a></li>
 </ul>
 <h2 id="settingsrestartcount"><a class="header" href="#settingsrestartcount">settings.restart.count</a></h2>
 <p>Maximum number of restart attempts when <code>mode</code> is <code>up-to-count</code>.</p>
@@ -1148,7 +1156,7 @@ positive integer, meaning &gt;0</p>
 <code>3</code></p>
 <p><em>Declared by:</em></p>
 <ul>
-<li><a href="file:///nix/store/k5277h9r78vlygdwc6f4kkirnqqpwg1i-source/nix/modules/nimi/restart.nix">/nix/store/k5277h9r78vlygdwc6f4kkirnqqpwg1i-source/nix/modules/nimi/restart.nix</a></li>
+<li><a href="file:///nix/store/752hzzmw17mjmcvpszc442bvd5mr7rck-source/nix/modules/nimi/restart.nix">/nix/store/752hzzmw17mjmcvpszc442bvd5mr7rck-source/nix/modules/nimi/restart.nix</a></li>
 </ul>
 <h2 id="settingsrestartmode"><a class="header" href="#settingsrestartmode">settings.restart.mode</a></h2>
 <p>Selects the restart behavior.</p>
@@ -1169,7 +1177,7 @@ one of “never”, “up-to-count”, “always”</p>
 <code>"up-to-count"</code></p>
 <p><em>Declared by:</em></p>
 <ul>
-<li><a href="file:///nix/store/k5277h9r78vlygdwc6f4kkirnqqpwg1i-source/nix/modules/nimi/restart.nix">/nix/store/k5277h9r78vlygdwc6f4kkirnqqpwg1i-source/nix/modules/nimi/restart.nix</a></li>
+<li><a href="file:///nix/store/752hzzmw17mjmcvpszc442bvd5mr7rck-source/nix/modules/nimi/restart.nix">/nix/store/752hzzmw17mjmcvpszc442bvd5mr7rck-source/nix/modules/nimi/restart.nix</a></li>
 </ul>
 <h2 id="settingsrestarttime"><a class="header" href="#settingsrestarttime">settings.restart.time</a></h2>
 <p>Delay between restarts in milliseconds.</p>
@@ -1183,7 +1191,7 @@ positive integer, meaning &gt;0</p>
 <code>250</code></p>
 <p><em>Declared by:</em></p>
 <ul>
-<li><a href="file:///nix/store/k5277h9r78vlygdwc6f4kkirnqqpwg1i-source/nix/modules/nimi/restart.nix">/nix/store/k5277h9r78vlygdwc6f4kkirnqqpwg1i-source/nix/modules/nimi/restart.nix</a></li>
+<li><a href="file:///nix/store/752hzzmw17mjmcvpszc442bvd5mr7rck-source/nix/modules/nimi/restart.nix">/nix/store/752hzzmw17mjmcvpszc442bvd5mr7rck-source/nix/modules/nimi/restart.nix</a></li>
 </ul>
 <h2 id="settingsstartup"><a class="header" href="#settingsstartup">settings.startup</a></h2>
 <p>Startup behavior for the nimi process manager.</p>
@@ -1205,7 +1213,7 @@ submodule</p>
 </code></pre>
 <p><em>Declared by:</em></p>
 <ul>
-<li><a href="file:///nix/store/k5277h9r78vlygdwc6f4kkirnqqpwg1i-source/nix/modules/nimi/startup.nix">/nix/store/k5277h9r78vlygdwc6f4kkirnqqpwg1i-source/nix/modules/nimi/startup.nix</a></li>
+<li><a href="file:///nix/store/752hzzmw17mjmcvpszc442bvd5mr7rck-source/nix/modules/nimi/startup.nix">/nix/store/752hzzmw17mjmcvpszc442bvd5mr7rck-source/nix/modules/nimi/startup.nix</a></li>
 </ul>
 <h2 id="settingsstartuprunonstartup"><a class="header" href="#settingsstartuprunonstartup">settings.startup.runOnStartup</a></h2>
 <p>Path to a binary to run once at startup.</p>
@@ -1233,7 +1241,7 @@ null or path in the Nix store</p>
 </code></pre>
 <p><em>Declared by:</em></p>
 <ul>
-<li><a href="file:///nix/store/k5277h9r78vlygdwc6f4kkirnqqpwg1i-source/nix/modules/nimi/startup.nix">/nix/store/k5277h9r78vlygdwc6f4kkirnqqpwg1i-source/nix/modules/nimi/startup.nix</a></li>
+<li><a href="file:///nix/store/752hzzmw17mjmcvpszc442bvd5mr7rck-source/nix/modules/nimi/startup.nix">/nix/store/752hzzmw17mjmcvpszc442bvd5mr7rck-source/nix/modules/nimi/startup.nix</a></li>
 </ul>
 
                     </main>

@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "ayu";
-            window.path_to_searchindex_js = "searchindex-9949701e.js";
+            window.path_to_searchindex_js = "searchindex-0df1d89b.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-7f147711.js"></script>
@@ -241,15 +241,15 @@ wires the container entrypoint to the wrapper binary, and uses
 <dt id="module-2"><a class="header" href="#module-2">module</a></dt>
 <dd>A nimi module attrset.</dd>
 </dl>
-<h2 id="niminimi.mkSandbox"><a class="header" href="#niminimi.mkSandbox"><code>nimi.mkSandbox</code></a></h2>
+<h2 id="niminimi.mkBwrap"><a class="header" href="#niminimi.mkBwrap"><code>nimi.mkBwrap</code></a></h2>
 <p>Run a bubblewrap instance for a given module. This evaluates the module,
 pops out a binary and wires it up to run inside a bubblewrap instance
 using the container from <code>mkContainerImage</code> as the root file system.</p>
 <h3 id="example-4"><a class="header" href="#example-4">Example</a></h3>
-<pre><code class="language-nix">mkSandbox { settings.binName = "my-nimi"; }
+<pre><code class="language-nix">mkBwrap { settings.binName = "my-nimi"; }
 </code></pre>
 <h3 id="type-4"><a class="header" href="#type-4">Type</a></h3>
-<pre><code>mkSandbox :: AttrSet -&gt; Derivation
+<pre><code>mkBwrap :: AttrSet -&gt; Derivation
 </code></pre>
 <h3 id="arguments-4"><a class="header" href="#arguments-4">Arguments</a></h3>
 <dl>

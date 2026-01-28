@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "ayu";
-            window.path_to_searchindex_js = "searchindex-9949701e.js";
+            window.path_to_searchindex_js = "searchindex-0df1d89b.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-7f147711.js"></script>
@@ -178,22 +178,22 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="sandbox"><a class="header" href="#sandbox">Sandbox</a></h1>
-<p><code>Nimi</code> provides a lightweight sandbox runner via <code>mkSandbox</code>. It uses
-<a href="https://github.com/containers/bubblewrap">bubblewrap</a> and
-<a href="https://github.com/containers/fuse-overlayfs">fuse-overlayfs</a> to run your
-services in an isolated environment that mimics a container, without requiring
-container runtimes like Docker or Podman.</p>
+<p><code>Nimi</code> provides a lightweight sandbox runner via <code>mkBwrap</code>. It uses
+<a href="https://github.com/containers/bubblewrap">bubblewrap</a> to run your services in
+an isolated environment that mimics a container, without requiring container
+runtimes like Docker or Podman.</p>
 <h2 id="what-it-provides"><a class="header" href="#what-it-provides">What it provides</a></h2>
 <ul>
-<li><strong>Isolated filesystem</strong>: A copy-on-write overlay where writes are discarded on exit.</li>
+<li><strong>Isolated filesystem</strong>: A tmpfs-based root with your rootfs directories bound read-only.</li>
 <li><strong>Container-like layout</strong>: Uses <code>settings.container.copyToRoot</code> to build the root filesystem.</li>
 <li><strong>Environment variables</strong>: Applies <code>settings.container.imageConfig.Env</code>.</li>
 <li><strong>Working directory</strong>: Applies <code>settings.container.imageConfig.WorkingDir</code>.</li>
 <li><strong>Volumes</strong>: Mounts <code>settings.container.imageConfig.Volumes</code> as writable tmpfs.</li>
+<li><strong>Writable directories</strong>: <code>/tmp</code>, <code>/run</code>, and <code>/var</code> are tmpfs mounts for runtime writes.</li>
 <li><strong>Nix store access</strong>: <code>/nix/store</code> is bind-mounted read-only so binaries can access their dependencies.</li>
 </ul>
 <h2 id="minimal-example"><a class="header" href="#minimal-example">Minimal example</a></h2>
-<pre><code class="language-nix">pkgs.nimi.mkSandbox {
+<pre><code class="language-nix">pkgs.nimi.mkBwrap {
   services."my-app" = {
     process.argv = [ (lib.getExe pkgs.my-app) ];
   };
@@ -219,37 +219,38 @@ container runtimes like Docker or Podman.</p>
 <h2 id="how-it-works"><a class="header" href="#how-it-works">How it works</a></h2>
 <ol>
 <li><strong>Build time</strong>: <code>copyToRoot</code> derivations are merged into a single rootfs using <code>symlinkJoin</code>.</li>
-<li><strong>Runtime</strong>: <code>fuse-overlayfs</code> creates a copy-on-write layer over the rootfs.</li>
-<li><strong>Execution</strong>: <code>bwrap</code> runs the <code>Nimi</code> binary inside the isolated namespace with:
+<li><strong>Execution</strong>: <code>bwrap</code> runs the <code>Nimi</code> binary inside an isolated namespace with:
 <ul>
-<li>The overlay mounted as <code>/</code></li>
+<li>A tmpfs as the root filesystem</li>
+<li>Directories from <code>copyToRoot</code> bound read-only</li>
 <li><code>/nix/store</code> bind-mounted read-only</li>
+<li><code>/tmp</code>, <code>/run</code>, <code>/var</code> as writable tmpfs</li>
 <li>Environment variables and working directory from <code>imageConfig</code></li>
-<li>Volumes as <code>tmpfs</code> mounts</li>
+<li>Volumes as tmpfs mounts</li>
 </ul>
 </li>
-<li><strong>Cleanup</strong>: On exit, the overlay is unmounted and temporary files are removed.</li>
 </ol>
 <h2 id="differences-from-containers"><a class="header" href="#differences-from-containers">Differences from containers</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
-<tr><th>Feature</th><th><code>mkSandbox</code></th><th><code>mkContainerImage</code></th></tr>
+<tr><th>Feature</th><th><code>mkBwrap</code></th><th><code>mkContainerImage</code></th></tr>
 </thead>
 <tbody>
-<tr><td>Runtime dependencies</td><td><code>bubblewrap</code>, <code>fuse-overlayfs</code></td><td>Container runtime (Docker, Pod-man)</td></tr>
+<tr><td>Runtime dependencies</td><td><code>bubblewrap</code> only</td><td>Container runtime (Docker, Podman)</td></tr>
 <tr><td>Image format</td><td>None (uses Nix store directly)</td><td>OCI image</td></tr>
 <tr><td>Startup time</td><td>Fast (no image loading)</td><td>Depends on runtime</td></tr>
 <tr><td>Portability</td><td>Linux only</td><td>Any OCI-compatible runtime</td></tr>
-<tr><td>Base images</td><td>No support</td><td>Supported via <code>fromImage</code></td></tr>
+<tr><td>Base images</td><td>Not supported</td><td>Supported via <code>fromImage</code></td></tr>
+<tr><td>Writable root</td><td>No (tmpfs dirs only)</td><td>Yes</td></tr>
 </tbody>
 </table>
 </div>
 <h2 id="notes"><a class="header" href="#notes">Notes</a></h2>
 <ul>
-<li>The sandbox requires Linux with FUSE support.</li>
-<li>Writes inside the sandbox are isolated and do not affect the host or Nix store.</li>
-<li>Signal handling (Ctrl+C) is supported and cleanly terminates the sandbox.</li>
+<li>The sandbox requires Linux with user namespaces enabled.</li>
+<li>The rootfs is read-only; writes go to tmpfs directories (<code>/tmp</code>, <code>/run</code>, <code>/var</code>, and configured volumes).</li>
+<li>Signal handling (Ctrl+C) is supported.</li>
 <li>The <code>entrypoint</code> is always the generated <code>Nimi</code> runner from <code>mkNimiBin</code>.</li>
 </ul>
 
