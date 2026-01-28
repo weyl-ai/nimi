@@ -270,7 +270,6 @@ rec {
         ];
         tmpfs = [ "/tmp" "/run" ];
         chdir = "/app";
-        share.net = true;
         unshare.pid = true;
       };
     }
@@ -305,7 +304,7 @@ rec {
 
       inherit (evaluatedConfig) passthru;
       meta = evaluatedConfig.meta // {
-        badPlatforms = lib.platforms.darwin;
+        badPlatforms = (evaluatedConfig.meta.badPlatforms or [ ]) ++ lib.platforms.darwin;
       };
     });
 }
