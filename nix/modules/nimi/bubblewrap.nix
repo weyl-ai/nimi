@@ -61,10 +61,12 @@ in
             Each entry maps a host path (`src`) to a path inside the sandbox
             (`dest`). The sandbox can read these paths but not modify them.
 
-            The default includes `/nix/store` (required for Nix binaries),
-            `/sys` (for system information), and `/etc/resolv.conf` (for DNS).
-            Override this list carefully; omitting `/nix/store` will break
-            most Nix-built programs.
+            The default includes `/nix/store` (required for Nix binaries) and
+            `/sys` (for system information). Override this list carefully;
+            omitting `/nix/store` will break most Nix-built programs.
+
+            For paths that may not exist on all systems, use `tryRoBinds`
+            instead.
           '';
           type = types.listOf (
             types.submodule {
@@ -89,6 +91,42 @@ in
               src = "/sys";
               dest = "/sys";
             }
+          ];
+          example = lib.literalExpression ''
+            [
+              { src = "/nix/store"; dest = "/nix/store"; }
+              { src = "/etc/ssl"; dest = "/etc/ssl"; }
+              { src = "/run/secrets"; dest = "/secrets"; }
+            ]
+          '';
+        };
+        tryRoBinds = mkOption {
+          description = ''
+            Read-only bind mounts that are skipped if the source does not exist.
+
+            Like `roBinds`, but uses `--ro-bind-try` which silently skips the
+            mount if the host path does not exist. Use this for paths that may
+            not be present on all systems.
+
+            The default includes `/etc/resolv.conf` for DNS resolution, which
+            may not exist on systems using systemd-resolved or other DNS
+            configurations.
+          '';
+          type = types.listOf (
+            types.submodule {
+              options.src = mkOption {
+                description = "Host path to bind into the sandbox.";
+                type = types.str;
+                example = "/etc/resolv.conf";
+              };
+              options.dest = mkOption {
+                description = "Path inside the sandbox where `src` appears.";
+                type = types.str;
+                example = "/etc/resolv.conf";
+              };
+            }
+          );
+          default = [
             {
               src = "/etc/resolv.conf";
               dest = "/etc/resolv.conf";
@@ -96,9 +134,8 @@ in
           ];
           example = lib.literalExpression ''
             [
-              { src = "/nix/store"; dest = "/nix/store"; }
-              { src = "/etc/ssl"; dest = "/etc/ssl"; }
-              { src = "/run/secrets"; dest = "/secrets"; }
+              { src = "/etc/resolv.conf"; dest = "/etc/resolv.conf"; }
+              { src = "/etc/hosts"; dest = "/etc/hosts"; }
             ]
           '';
         };
@@ -259,6 +296,14 @@ in
           dest
         ]
       ) cfg.roBinds
+      ++ lib.concatMap (
+        { src, dest }:
+        [
+          "--ro-bind-try"
+          src
+          dest
+        ]
+      ) cfg.tryRoBinds
       ++ lib.optionals cfg.bind.dev [
         "--dev"
         "/dev"

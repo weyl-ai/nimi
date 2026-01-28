@@ -251,7 +251,8 @@ rec {
     bubblewrap sandbox configured via `settings.bubblewrap` options.
 
     The sandbox is configured through the module system with sensible defaults:
-    - `/nix/store`, `/sys`, and `/etc/resolv.conf` are read-only bound
+    - `/nix/store` and `/sys` are read-only bound
+    - `/etc/resolv.conf` is bound with `--ro-bind-try` (skipped if missing)
     - `/nix`, `/tmp`, `/run`, `/var`, `/etc` are tmpfs mounts
     - `/dev` and `/proc` are bound
     - Network is shared but user/pid/uts/ipc/cgroup namespaces are unshared
