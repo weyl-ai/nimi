@@ -250,7 +250,9 @@ in
   config = {
     assertions = [
       {
-        assertion = lib.all (x: lib.toUpper x == x) (lib.attrNames cfg.environment);
+        assertion = lib.all (x: lib.match "[A-Za-z_][A-Za-z0-9_]*" x != null) (
+          lib.attrNames cfg.environment
+        );
         message = "settings.bubblewrap.environment must have all uppercase keys.";
       }
     ];
