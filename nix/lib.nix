@@ -253,13 +253,13 @@ rec {
     # Example
 
     ```nix
-    mkSandbox { settings.binName = "my-nimi"; }
+    mkBwrap { settings.binName = "my-nimi"; }
     ```
 
     # Type
 
     ```
-    mkSandbox :: AttrSet -> Derivation
+    mkBwrap :: AttrSet -> Derivation
     ```
 
     # Arguments
@@ -267,123 +267,62 @@ rec {
     module
     : A nimi module attrset.
   */
-  mkSandbox =
+  mkBwrap =
     module:
     let
+      evaluated = evalNimiModule module;
       bin = mkNimiBin module;
-      evaluatedConfig = evalNimiModule module;
-      containerConfig = evaluatedConfig.settings.container;
-      inherit (containerConfig) imageConfig;
+      image = evaluated.settings.container.imageConfig;
 
-      # Build a merged rootfs from copyToRoot derivations
       rootfs = pkgs.symlinkJoin {
         name = "${bin.name}-rootfs";
-        paths = containerConfig.copyToRoot;
+        paths = [
+          (pkgs.runCommand "bwrap-base-dirs" { } "mkdir -p $out/{nix,dev,proc,tmp,run,var,sys,etc}")
+        ]
+        ++ evaluated.settings.container.copyToRoot;
       };
 
-      # Convert imageConfig.Env (list of "KEY=VALUE" strings) to bwrap --setenv args
-      envArgs = lib.concatMap (
-        envStr:
-        let
-          parts = lib.splitString "=" envStr;
-          key = builtins.head parts;
-          value = lib.concatStringsSep "=" (builtins.tail parts);
-        in
-        [
-          "--setenv"
-          key
-          value
-        ]
-      ) (imageConfig.Env or [ ]);
+      toEnvArg =
+        envVarDef:
+        lib.pipe envVarDef [
+          (lib.splitString "=")
+          lib.escapeShellArgs
+          (args: "--setenv ${args}")
+        ];
 
-      # Convert imageConfig.Volumes (attrset of paths) to bwrap --tmpfs args
-      volumeArgs = lib.concatMap (path: [
-        "--tmpfs"
-        path
-      ]) (lib.attrNames (imageConfig.Volumes or { }));
+      envArgs = lib.concatMapStringsSep " " toEnvArg (image.Env or [ ]);
 
-      # Working directory from imageConfig, default to /
-      workingDir = imageConfig.WorkingDir or "/";
-
-      bwrapArgs = lib.escapeShellArgs (
-        [
-          "--ro-bind"
-          "/nix/store"
-          "/nix/store"
-        ]
-        ++ [
-          "--dev"
-          "/dev"
-        ]
-        ++ [
-          "--proc"
-          "/proc"
-        ]
-        ++ [
-          "--tmpfs"
-          "/tmp"
-        ]
-        ++ [
-          "--tmpfs"
-          "/run"
-        ]
-        ++ [
-          "--ro-bind"
-          "/sys"
-          "/sys"
-        ]
-        ++ [
-          "--ro-bind"
-          "/etc/resolv.conf"
-          "/etc/resolv.conf"
-        ]
-        ++ [
-          "--chdir"
-          workingDir
-        ]
-        ++ [
-          "--share-net"
-          "--unshare-user"
-          "--unshare-pid"
-          "--unshare-uts"
-          "--unshare-ipc"
-          "--unshare-cgroup"
-          "--die-with-parent"
-        ]
-        ++ envArgs
-        ++ volumeArgs
-        ++ [
-          "--"
-          (lib.getExe bin)
-        ]
+      volumeArgs = lib.concatMapStringsSep " " (p: "--tmpfs ${lib.escapeShellArg p}") (
+        lib.attrNames (image.Volumes or { })
       );
     in
     builtins.addErrorContext errorCtxs.failedToEvaluateNimiMicroVM (writeShellApplication {
       name = "${bin.name}-sandbox";
-      runtimeInputs = [
-        bubblewrap
-        pkgs.fuse-overlayfs
-        pkgs.fuse
-      ];
+      runtimeInputs = [ bubblewrap ];
       text = ''
-        tmpdir="$(mktemp -d -t nimi-sandbox.XXXXXX)"
-        mkdir -p "$tmpdir"/{upper,work,merged}
-
-        cleanup() {
-          fusermount -uz "$tmpdir/merged" 2>/dev/null || true
-          rm -rf "$tmpdir/upper" "$tmpdir/work" 2>/dev/null || true
-          rmdir "$tmpdir/merged" "$tmpdir" 2>/dev/null || true
-        }
-
-        fuse-overlayfs -o "lowerdir=${rootfs},upperdir=$tmpdir/upper,workdir=$tmpdir/work" "$tmpdir/merged"
-
-        bwrap --bind "$tmpdir/merged" / ${bwrapArgs} &
-        pid=$!
-
-        trap 'kill -TERM $pid 2>/dev/null' INT TERM
-        wait $pid
-        sleep 0.2
-        cleanup
+        exec bwrap \
+          --ro-bind ${rootfs} / \
+          --tmpfs /nix \
+          --ro-bind /nix/store /nix/store \
+          --dev /dev \
+          --proc /proc \
+          --ro-bind /sys /sys \
+          --tmpfs /tmp \
+          --tmpfs /run \
+          --tmpfs /var \
+          --tmpfs /etc \
+          --ro-bind /etc/resolv.conf /etc/resolv.conf \
+          --chdir ${lib.escapeShellArg (image.WorkingDir or "/")} \
+          --share-net \
+          --unshare-user \
+          --unshare-pid \
+          --unshare-uts \
+          --unshare-ipc \
+          --unshare-cgroup \
+          --die-with-parent \
+          ${envArgs} \
+          ${volumeArgs} \
+          -- ${lib.getExe bin}
       '';
       meta.badPlatforms = lib.platforms.darwin;
     });

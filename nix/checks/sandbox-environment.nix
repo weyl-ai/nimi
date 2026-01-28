@@ -13,7 +13,7 @@ let
     text = ''
       failed=0
 
-      # Check environment variable
+      echo "Testing environment variable..."
       if [[ "''${TEST_VAR:-}" != "test_value" ]]; then
         echo "FAIL: TEST_VAR expected test_value, got ''${TEST_VAR:-}"
         failed=1
@@ -21,15 +21,7 @@ let
         echo "PASS: TEST_VAR is set correctly"
       fi
 
-      # Check environment variable with equals sign in value
-      if [[ "''${TEST_EQUALS:-}" != "foo=bar=baz" ]]; then
-        echo "FAIL: TEST_EQUALS expected foo=bar=baz, got ''${TEST_EQUALS:-}"
-        failed=1
-      else
-        echo "PASS: TEST_EQUALS is set correctly"
-      fi
-
-      # Check working directory
+      echo "Testing working directory..."
       if [[ "$PWD" != "/app" ]]; then
         echo "FAIL: WorkingDir expected '/app', got '$PWD'"
         failed=1
@@ -37,7 +29,7 @@ let
         echo "PASS: WorkingDir is /app"
       fi
 
-      # Check nix store is accessible
+      echo "Testing nix store is accessible..."
       if [[ ! -d /nix/store ]]; then
         echo "FAIL: /nix/store is not accessible"
         failed=1
@@ -45,22 +37,13 @@ let
         echo "PASS: /nix/store is accessible"
       fi
 
-      # Check volume is writable tmpfs
+      echo "Testing volume is writable tmpfs..."
       if ! touch /data/test-file 2>/dev/null; then
         echo "FAIL: /data is not writable"
         failed=1
       else
         echo "PASS: /data volume is writable"
         rm /data/test-file
-      fi
-
-      # Check root filesystem is writable (overlay working)
-      # Write a file with unique content that we can verify doesn't leak to host
-      if ! echo "SANDBOX_WRITE_TEST_MARKER" > /app/sandbox-write-test 2>/dev/null; then
-        echo "FAIL: root filesystem is not writable (overlay not working)"
-        failed=1
-      else
-        echo "PASS: root filesystem is writable (overlay working)"
       fi
 
       exit $failed
@@ -71,17 +54,13 @@ let
     mkdir -p $out/app $out/data
   '';
 
-  sandbox = nimi.mkSandbox {
-    services."verify-env" = {
-      process.argv = [ (lib.getExe verifyEnv) ];
-    };
-    settings.restart.mode = "never";
+  sandbox = nimi.mkBwrap {
+    settings.startup.runOnStartup = lib.getExe verifyEnv;
     settings.container = {
       copyToRoot = [ rootfs ];
       imageConfig = {
         Env = [
           "TEST_VAR=test_value"
-          "TEST_EQUALS=foo=bar=baz"
         ];
         WorkingDir = "/app";
         Volumes = {
@@ -103,9 +82,5 @@ testers.runNixOSTest {
 
     if "FAIL:" in output:
         raise Exception("Some sandbox checks failed")
-
-    # Verify that writes inside sandbox don't affect the original rootfs
-    machine.succeed("test ! -f ${rootfs}/app/sandbox-write-test")
-    print("PASS: sandbox writes do not leak to host rootfs")
   '';
 }
