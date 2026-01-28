@@ -3,6 +3,19 @@ let
   inherit (lib) mkOption mkEnableOption types;
 
   cfg = config.settings.bubblewrap;
+
+  roBindType = types.submodule {
+    options.src = mkOption {
+      description = "Host path to bind into the sandbox.";
+      type = types.str;
+      example = "/etc/resolv.conf";
+    };
+    options.dest = mkOption {
+      description = "Path inside the sandbox where `src` appears.";
+      type = types.str;
+      example = "/etc/resolv.conf";
+    };
+  };
 in
 {
   _class = "nimi";
@@ -32,7 +45,6 @@ in
           { src = "/etc/ssl"; dest = "/etc/ssl"; }
         ];
         extraTmpfs = [ "/app/cache" ];
-        share.net = true;
       }
     '';
     type = types.submodule {
@@ -68,20 +80,7 @@ in
             For paths that may not exist on all systems, use `tryRoBinds`
             instead.
           '';
-          type = types.listOf (
-            types.submodule {
-              options.src = mkOption {
-                description = "Host path to bind into the sandbox.";
-                type = types.str;
-                example = "/nix/store";
-              };
-              options.dest = mkOption {
-                description = "Path inside the sandbox where `src` appears.";
-                type = types.str;
-                example = "/nix/store";
-              };
-            }
-          );
+          type = types.listOf roBindType;
           default = [
             {
               src = "/nix/store";
@@ -112,20 +111,7 @@ in
             may not exist on systems using systemd-resolved or other DNS
             configurations.
           '';
-          type = types.listOf (
-            types.submodule {
-              options.src = mkOption {
-                description = "Host path to bind into the sandbox.";
-                type = types.str;
-                example = "/etc/resolv.conf";
-              };
-              options.dest = mkOption {
-                description = "Path inside the sandbox where `src` appears.";
-                type = types.str;
-                example = "/etc/resolv.conf";
-              };
-            }
-          );
+          type = types.listOf roBindType;
           default = [
             {
               src = "/etc/resolv.conf";
@@ -182,11 +168,6 @@ in
             default = true;
           };
           proc = mkEnableOption "bind /proc into the sandbox" // {
-            default = true;
-          };
-        };
-        share = {
-          net = mkEnableOption "share the host network namespace with the sandbox" // {
             default = true;
           };
         };
@@ -316,7 +297,6 @@ in
         "--chdir"
         cfg.chdir
       ]
-      ++ lib.optional cfg.share.net "--share-net"
       ++ lib.optional cfg.unshare.user "--unshare-user"
       ++ lib.optional cfg.unshare.pid "--unshare-pid"
       ++ lib.optional cfg.unshare.uts "--unshare-uts"

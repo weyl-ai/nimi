@@ -54,7 +54,6 @@ pkgs.nimi.mkBwrap {
       { src = "/run/secrets"; dest = "/secrets"; }
     ];
     extraTmpfs = [ "/var/cache/nginx" ];
-    share.net = true;
   };
 }
 ```
