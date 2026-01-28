@@ -289,9 +289,9 @@ rec {
   mkBwrap =
     module:
     let
-      evaluated = evalNimiModule module;
+      evaluatedConfig = evalNimiModule module;
       bin = mkNimiBin module;
-      cfg = evaluated.settings.bubblewrap;
+      cfg = evaluatedConfig.settings.bubblewrap;
     in
     builtins.addErrorContext errorCtxs.failedToEvaluateNimiBwrap (writeShellApplication {
       name = "${bin.name}-sandbox";
@@ -299,8 +299,12 @@ rec {
       text = ''
         exec bwrap \
           ${lib.escapeShellArgs cfg.flags} \
-          -- ${lib.getExe bin}
+          -- ${lib.getExe bin} "$@"
       '';
-      meta.badPlatforms = lib.platforms.darwin;
+
+      inherit (evaluatedConfig) passthru;
+      meta = evaluatedConfig.meta // {
+        badPlatforms = lib.platforms.darwin;
+      };
     });
 }

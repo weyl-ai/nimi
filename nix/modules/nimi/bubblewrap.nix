@@ -169,9 +169,6 @@ in
           cgroup = mkEnableOption "create a new cgroup namespace" // {
             default = true;
           };
-          net = mkEnableOption "create a new network namespace" // {
-            default = true;
-          };
         };
         dieWithParent = mkEnableOption "terminate sandbox when parent process exits" // {
           default = true;
@@ -280,6 +277,7 @@ in
       ++ lib.optional cfg.unshare.uts "--unshare-uts"
       ++ lib.optional cfg.unshare.ipc "--unshare-ipc"
       ++ lib.optional cfg.unshare.cgroup "--unshare-cgroup"
+      ++ lib.optional cfg.dieWithParent "--die-with-parent"
       ++ cfg.appendFlags;
   };
 }
