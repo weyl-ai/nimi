@@ -385,5 +385,6 @@ rec {
         sleep 0.2
         cleanup
       '';
+      meta.badPlatforms = lib.platforms.darwin;
     });
 }
