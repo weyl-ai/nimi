@@ -342,6 +342,14 @@ in
         "--tmpfs"
         tmpfs
       ]) (cfg.tmpfs ++ cfg.extraTmpfs)
+      ++ lib.optionals cfg.bind.dev [
+        "--dev"
+        "/dev"
+      ]
+      ++ lib.optionals cfg.bind.proc [
+        "--proc"
+        "/proc"
+      ]
       ++ lib.concatMap (
         { src, dest }:
         [
@@ -374,14 +382,6 @@ in
           dest
         ]
       ) cfg.tryDevBinds
-      ++ lib.optionals cfg.bind.dev [
-        "--dev"
-        "/dev"
-      ]
-      ++ lib.optionals cfg.bind.proc [
-        "--proc"
-        "/proc"
-      ]
       ++ lib.optionals (cfg.chdir != null) [
         "--chdir"
         cfg.chdir
