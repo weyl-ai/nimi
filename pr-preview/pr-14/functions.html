@@ -35,7 +35,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "ayu";
-            window.path_to_searchindex_js = "searchindex-2d0382c3.js";
+            window.path_to_searchindex_js = "searchindex-73aaf4e8.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-d80f7869.js"></script>
@@ -211,40 +211,82 @@ in toNimiJson cfg
 <dt id="evaluatedconfig"><a class="header" href="#evaluatedconfig">evaluatedConfig</a></dt>
 <dd>The evaluated nimi config.</dd>
 </dl>
+<h2 id="niminimi.mkNimiBinWithConfig"><a class="header" href="#niminimi.mkNimiBinWithConfig"><code>nimi.mkNimiBinWithConfig</code></a></h2>
+<p>Build a wrapper binary from an already-evaluated nimi config. This writes
+a validated JSON config and emits a shell wrapper that runs <code>nimi</code> with
+that config so consumers can execute it like a normal binary.</p>
+<p>Use this when you already have an evaluated config (e.g., from <code>evalNimiModule</code>)
+and want to avoid re-evaluating the module.</p>
+<h3 id="example-2"><a class="header" href="#example-2">Example</a></h3>
+<pre><code class="language-nix">let cfg = evalNimiModule { settings.binName = "my-nimi"; };
+in mkNimiBinWithConfig cfg
+</code></pre>
+<h3 id="type-2"><a class="header" href="#type-2">Type</a></h3>
+<pre><code>mkNimiBinWithConfig :: AttrSet -&gt; Derivation
+</code></pre>
+<h3 id="arguments-2"><a class="header" href="#arguments-2">Arguments</a></h3>
+<dl>
+<dt id="evaluatedconfig-1"><a class="header" href="#evaluatedconfig-1">evaluatedConfig</a></dt>
+<dd>An already-evaluated nimi config (output of <code>evalNimiModule</code>).</dd>
+</dl>
 <h2 id="niminimi.mkNimiBin"><a class="header" href="#niminimi.mkNimiBin"><code>nimi.mkNimiBin</code></a></h2>
 <p>Build a wrapper binary for a given nimi module. This evaluates the module,
 writes a validated JSON config, and emits a shell wrapper that runs <code>nimi</code>
 with that config so consumers can execute it like a normal binary.</p>
-<h3 id="example-2"><a class="header" href="#example-2">Example</a></h3>
+<p>This is a convenience wrapper around <code>mkNimiBinWithConfig</code> that handles
+module evaluation for you.</p>
+<h3 id="example-3"><a class="header" href="#example-3">Example</a></h3>
 <pre><code class="language-nix">mkNimiBin { settings.binName = "my-nimi"; }
 </code></pre>
-<h3 id="type-2"><a class="header" href="#type-2">Type</a></h3>
+<h3 id="type-3"><a class="header" href="#type-3">Type</a></h3>
 <pre><code>mkNimiBin :: AttrSet -&gt; Derivation
 </code></pre>
-<h3 id="arguments-2"><a class="header" href="#arguments-2">Arguments</a></h3>
+<h3 id="arguments-3"><a class="header" href="#arguments-3">Arguments</a></h3>
 <dl>
 <dt id="module-1"><a class="header" href="#module-1">module</a></dt>
 <dd>A nimi module attrset.</dd>
+</dl>
+<h2 id="niminimi.mkContainerImageWithConfig"><a class="header" href="#niminimi.mkContainerImageWithConfig"><code>nimi.mkContainerImageWithConfig</code></a></h2>
+<p>Build a container image from an already-evaluated nimi config. This wires
+the container entrypoint to the wrapper binary and uses
+<code>nix2container.buildImage</code> when available (otherwise <code>dockerTools.buildImage</code>).</p>
+<p>Use this when you already have an evaluated config (e.g., from <code>evalNimiModule</code>)
+and want to avoid re-evaluating the module.</p>
+<h3 id="example-4"><a class="header" href="#example-4">Example</a></h3>
+<pre><code class="language-nix">let cfg = evalNimiModule { settings.binName = "my-nimi"; };
+in mkContainerImageWithConfig cfg
+</code></pre>
+<h3 id="type-4"><a class="header" href="#type-4">Type</a></h3>
+<pre><code>mkContainerImageWithConfig :: AttrSet -&gt; Derivation
+</code></pre>
+<h3 id="arguments-4"><a class="header" href="#arguments-4">Arguments</a></h3>
+<dl>
+<dt id="evaluatedconfig-2"><a class="header" href="#evaluatedconfig-2">evaluatedConfig</a></dt>
+<dd>An already-evaluated nimi config (output of <code>evalNimiModule</code>).</dd>
 </dl>
 <h2 id="niminimi.mkContainerImage"><a class="header" href="#niminimi.mkContainerImage"><code>nimi.mkContainerImage</code></a></h2>
 <p>Build a container image for a given nimi module. This evaluates the module,
 wires the container entrypoint to the wrapper binary, and uses
 <code>nix2container.buildImage</code> when available (otherwise <code>dockerTools.buildImage</code>).</p>
-<h3 id="example-3"><a class="header" href="#example-3">Example</a></h3>
+<p>This is a convenience wrapper around <code>mkContainerImageWithConfig</code> that handles
+module evaluation for you.</p>
+<h3 id="example-5"><a class="header" href="#example-5">Example</a></h3>
 <pre><code class="language-nix">mkContainerImage { settings.binName = "my-nimi"; }
 </code></pre>
-<h3 id="type-3"><a class="header" href="#type-3">Type</a></h3>
+<h3 id="type-5"><a class="header" href="#type-5">Type</a></h3>
 <pre><code>mkContainerImage :: AttrSet -&gt; Derivation
 </code></pre>
-<h3 id="arguments-3"><a class="header" href="#arguments-3">Arguments</a></h3>
+<h3 id="arguments-5"><a class="header" href="#arguments-5">Arguments</a></h3>
 <dl>
 <dt id="module-2"><a class="header" href="#module-2">module</a></dt>
 <dd>A nimi module attrset.</dd>
 </dl>
-<h2 id="niminimi.mkBwrap"><a class="header" href="#niminimi.mkBwrap"><code>nimi.mkBwrap</code></a></h2>
-<p>Build a sandboxed wrapper using bubblewrap for a given nimi module.
-This evaluates the module, creates a nimi binary, and wraps it in a
-bubblewrap sandbox configured via <code>settings.bubblewrap</code> options.</p>
+<h2 id="niminimi.mkBwrapWithConfig"><a class="header" href="#niminimi.mkBwrapWithConfig"><code>nimi.mkBwrapWithConfig</code></a></h2>
+<p>Build a sandboxed wrapper using bubblewrap from an already-evaluated nimi config.
+This creates a nimi binary and wraps it in a bubblewrap sandbox configured via
+<code>settings.bubblewrap</code> options.</p>
+<p>Use this when you already have an evaluated config (e.g., from <code>evalNimiModule</code>)
+and want to avoid re-evaluating the module.</p>
 <p>The sandbox is configured through the module system with sensible defaults:</p>
 <ul>
 <li><code>/nix/store</code> and <code>/sys</code> are read-only bound</li>
@@ -253,7 +295,36 @@ bubblewrap sandbox configured via <code>settings.bubblewrap</code> options.</p>
 <li><code>/dev</code> and <code>/proc</code> are bound</li>
 <li>Network is shared but user/pid/uts/ipc/cgroup namespaces are unshared</li>
 </ul>
-<h3 id="example-4"><a class="header" href="#example-4">Example</a></h3>
+<h3 id="example-6"><a class="header" href="#example-6">Example</a></h3>
+<pre><code class="language-nix">let cfg = evalNimiModule {
+  settings.binName = "my-sandboxed-app";
+  settings.bubblewrap.unshare.pid = true;
+};
+in mkBwrapWithConfig cfg
+</code></pre>
+<h3 id="type-6"><a class="header" href="#type-6">Type</a></h3>
+<pre><code>mkBwrapWithConfig :: AttrSet -&gt; Derivation
+</code></pre>
+<h3 id="arguments-6"><a class="header" href="#arguments-6">Arguments</a></h3>
+<dl>
+<dt id="evaluatedconfig-3"><a class="header" href="#evaluatedconfig-3">evaluatedConfig</a></dt>
+<dd>An already-evaluated nimi config (output of <code>evalNimiModule</code>).</dd>
+</dl>
+<h2 id="niminimi.mkBwrap"><a class="header" href="#niminimi.mkBwrap"><code>nimi.mkBwrap</code></a></h2>
+<p>Build a sandboxed wrapper using bubblewrap for a given nimi module.
+This evaluates the module, creates a nimi binary, and wraps it in a
+bubblewrap sandbox configured via <code>settings.bubblewrap</code> options.</p>
+<p>This is a convenience wrapper around <code>mkBwrapWithConfig</code> that handles
+module evaluation for you.</p>
+<p>The sandbox is configured through the module system with sensible defaults:</p>
+<ul>
+<li><code>/nix/store</code> and <code>/sys</code> are read-only bound</li>
+<li><code>/etc/resolv.conf</code> is bound with <code>--ro-bind-try</code> (skipped if missing)</li>
+<li><code>/nix</code>, <code>/tmp</code>, <code>/run</code>, <code>/var</code>, <code>/etc</code> are tmpfs mounts</li>
+<li><code>/dev</code> and <code>/proc</code> are bound</li>
+<li>Network is shared but user/pid/uts/ipc/cgroup namespaces are unshared</li>
+</ul>
+<h3 id="example-7"><a class="header" href="#example-7">Example</a></h3>
 <pre><code class="language-nix">mkBwrap {
   settings.binName = "my-sandboxed-app";
   settings.bubblewrap = {
@@ -268,10 +339,10 @@ bubblewrap sandbox configured via <code>settings.bubblewrap</code> options.</p>
   };
 }
 </code></pre>
-<h3 id="type-4"><a class="header" href="#type-4">Type</a></h3>
+<h3 id="type-7"><a class="header" href="#type-7">Type</a></h3>
 <pre><code>mkBwrap :: AttrSet -&gt; Derivation
 </code></pre>
-<h3 id="arguments-4"><a class="header" href="#arguments-4">Arguments</a></h3>
+<h3 id="arguments-7"><a class="header" href="#arguments-7">Arguments</a></h3>
 <dl>
 <dt id="module-3"><a class="header" href="#module-3">module</a></dt>
 <dd>A nimi module attrset. Configure the sandbox via <code>settings.bubblewrap</code>.</dd>
