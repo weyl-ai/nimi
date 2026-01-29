@@ -54,8 +54,7 @@ in
             Environment variables to set inside the sandbox.
 
             These are passed to bubblewrap via `--setenv` and are available to
-            the nimi process manager and all services it spawns. Variable names
-            must be uppercase.
+            the nimi process manager and all services it spawns.
           '';
           type = types.lazyAttrsOf types.str;
           default = { };
