@@ -134,9 +134,52 @@ rec {
       '';
 
   /**
+    Build a wrapper binary from an already-evaluated nimi config. This writes
+    a validated JSON config and emits a shell wrapper that runs `nimi` with
+    that config so consumers can execute it like a normal binary.
+
+    Use this when you already have an evaluated config (e.g., from `evalNimiModule`)
+    and want to avoid re-evaluating the module.
+
+    # Example
+
+    ```nix
+    let cfg = evalNimiModule { settings.binName = "my-nimi"; };
+    in mkNimiBinWithConfig cfg
+    ```
+
+    # Type
+
+    ```
+    mkNimiBinWithConfig :: AttrSet -> Derivation
+    ```
+
+    # Arguments
+
+    evaluatedConfig
+    : An already-evaluated nimi config (output of `evalNimiModule`).
+  */
+  mkNimiBinWithConfig =
+    evaluatedConfig:
+    let
+      cfgJson = toNimiJson evaluatedConfig;
+    in
+    builtins.addErrorContext errorCtxs.failedToCreateNimiWrapper (writeShellApplication {
+      name = evaluatedConfig.settings.binName;
+      runtimeInputs = [ nimi ];
+      text = ''
+        exec nimi --config "${cfgJson}" run "$@"
+      '';
+      inherit (evaluatedConfig) passthru meta;
+    });
+
+  /**
     Build a wrapper binary for a given nimi module. This evaluates the module,
     writes a validated JSON config, and emits a shell wrapper that runs `nimi`
     with that config so consumers can execute it like a normal binary.
+
+    This is a convenience wrapper around `mkNimiBinWithConfig` that handles
+    module evaluation for you.
 
     # Example
 
@@ -155,48 +198,37 @@ rec {
     module
     : A nimi module attrset.
   */
-  mkNimiBin =
-    module:
-    let
-      evaluatedConfig = evalNimiModule module;
-      cfgJson = toNimiJson evaluatedConfig;
-    in
-    builtins.addErrorContext errorCtxs.failedToCreateNimiWrapper (writeShellApplication {
-      name = evaluatedConfig.settings.binName;
-      runtimeInputs = [ nimi ];
-      text = ''
-        exec nimi --config "${cfgJson}" run "$@"
-      '';
-      inherit (evaluatedConfig) passthru meta;
-    });
+  mkNimiBin = module: mkNimiBinWithConfig (evalNimiModule module);
 
   /**
-    Build a container image for a given nimi module. This evaluates the module,
-    wires the container entrypoint to the wrapper binary, and uses
+    Build a container image from an already-evaluated nimi config. This wires
+    the container entrypoint to the wrapper binary and uses
     `nix2container.buildImage` when available (otherwise `dockerTools.buildImage`).
+
+    Use this when you already have an evaluated config (e.g., from `evalNimiModule`)
+    and want to avoid re-evaluating the module.
 
     # Example
 
     ```nix
-    mkContainerImage { settings.binName = "my-nimi"; }
+    let cfg = evalNimiModule { settings.binName = "my-nimi"; };
+    in mkContainerImageWithConfig cfg
     ```
 
     # Type
 
     ```
-    mkContainerImage :: AttrSet -> Derivation
+    mkContainerImageWithConfig :: AttrSet -> Derivation
     ```
 
     # Arguments
 
-    module
-    : A nimi module attrset.
+    evaluatedConfig
+    : An already-evaluated nimi config (output of `evalNimiModule`).
   */
-  mkContainerImage =
-    module:
+  mkContainerImageWithConfig =
+    evaluatedConfig:
     let
-      evaluatedConfig = evalNimiModule module;
-
       cleanedSettings = lib.pipe evaluatedConfig.settings.container [
         (settings: if settings.fromImage == null then removeAttrs settings [ "fromImage" ] else settings)
         (settings: removeAttrs settings [ "imageConfig" ])
@@ -204,7 +236,7 @@ rec {
 
       imageCfg = evaluatedConfig.settings.container.imageConfig // {
         entrypoint = [
-          (lib.getExe (mkNimiBin module))
+          (lib.getExe (mkNimiBinWithConfig evaluatedConfig))
         ];
       };
 
@@ -246,9 +278,96 @@ rec {
     );
 
   /**
+    Build a container image for a given nimi module. This evaluates the module,
+    wires the container entrypoint to the wrapper binary, and uses
+    `nix2container.buildImage` when available (otherwise `dockerTools.buildImage`).
+
+    This is a convenience wrapper around `mkContainerImageWithConfig` that handles
+    module evaluation for you.
+
+    # Example
+
+    ```nix
+    mkContainerImage { settings.binName = "my-nimi"; }
+    ```
+
+    # Type
+
+    ```
+    mkContainerImage :: AttrSet -> Derivation
+    ```
+
+    # Arguments
+
+    module
+    : A nimi module attrset.
+  */
+  mkContainerImage = module: mkContainerImageWithConfig (evalNimiModule module);
+
+  /**
+    Build a sandboxed wrapper using bubblewrap from an already-evaluated nimi config.
+    This creates a nimi binary and wraps it in a bubblewrap sandbox configured via
+    `settings.bubblewrap` options.
+
+    Use this when you already have an evaluated config (e.g., from `evalNimiModule`)
+    and want to avoid re-evaluating the module.
+
+    The sandbox is configured through the module system with sensible defaults:
+    - `/nix/store` and `/sys` are read-only bound
+    - `/etc/resolv.conf` is bound with `--ro-bind-try` (skipped if missing)
+    - `/nix`, `/tmp`, `/run`, `/var`, `/etc` are tmpfs mounts
+    - `/dev` and `/proc` are bound
+    - Network is shared but user/pid/uts/ipc/cgroup namespaces are unshared
+
+    # Example
+
+    ```nix
+    let cfg = evalNimiModule {
+      settings.binName = "my-sandboxed-app";
+      settings.bubblewrap.unshare.pid = true;
+    };
+    in mkBwrapWithConfig cfg
+    ```
+
+    # Type
+
+    ```
+    mkBwrapWithConfig :: AttrSet -> Derivation
+    ```
+
+    # Arguments
+
+    evaluatedConfig
+    : An already-evaluated nimi config (output of `evalNimiModule`).
+  */
+  mkBwrapWithConfig =
+    evaluatedConfig:
+    let
+      bin = mkNimiBinWithConfig evaluatedConfig;
+      cfg = evaluatedConfig.settings.bubblewrap;
+    in
+    builtins.addErrorContext errorCtxs.failedToEvaluateNimiBwrap (writeShellApplication {
+      name = "${bin.name}-sandbox";
+      runtimeInputs = [ bubblewrap ];
+      text = ''
+        exec bwrap \
+          ${lib.escapeShellArgs cfg.flags} \
+          -- ${lib.getExe bin} "$@"
+      '';
+
+      inherit (evaluatedConfig) passthru;
+      meta = evaluatedConfig.meta // {
+        badPlatforms = (evaluatedConfig.meta.badPlatforms or [ ]) ++ lib.platforms.darwin;
+      };
+    });
+
+  /**
     Build a sandboxed wrapper using bubblewrap for a given nimi module.
     This evaluates the module, creates a nimi binary, and wraps it in a
     bubblewrap sandbox configured via `settings.bubblewrap` options.
+
+    This is a convenience wrapper around `mkBwrapWithConfig` that handles
+    module evaluation for you.
 
     The sandbox is configured through the module system with sensible defaults:
     - `/nix/store` and `/sys` are read-only bound
@@ -286,25 +405,5 @@ rec {
     module
     : A nimi module attrset. Configure the sandbox via `settings.bubblewrap`.
   */
-  mkBwrap =
-    module:
-    let
-      evaluatedConfig = evalNimiModule module;
-      bin = mkNimiBin module;
-      cfg = evaluatedConfig.settings.bubblewrap;
-    in
-    builtins.addErrorContext errorCtxs.failedToEvaluateNimiBwrap (writeShellApplication {
-      name = "${bin.name}-sandbox";
-      runtimeInputs = [ bubblewrap ];
-      text = ''
-        exec bwrap \
-          ${lib.escapeShellArgs cfg.flags} \
-          -- ${lib.getExe bin} "$@"
-      '';
-
-      inherit (evaluatedConfig) passthru;
-      meta = evaluatedConfig.meta // {
-        badPlatforms = (evaluatedConfig.meta.badPlatforms or [ ]) ++ lib.platforms.darwin;
-      };
-    });
+  mkBwrap = module: mkBwrapWithConfig (evalNimiModule module);
 }
