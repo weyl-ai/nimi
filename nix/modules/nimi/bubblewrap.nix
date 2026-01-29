@@ -229,6 +229,36 @@ in
             [ "--cap-add" "CAP_NET_BIND_SERVICE" ]
           '';
         };
+        uid = mkOption {
+          description = ''
+            Use a custom user id in the sandbox.
+
+            Only applies if `unshare.user` is `true`.
+          '';
+          type = types.nullOr types.ints.u32;
+          default = null;
+          example = lib.literalExpression "1000";
+        };
+        gid = mkOption {
+          description = ''
+            Use a custom group id in the sandbox.
+
+            Only applies if `unshare.user` is `true`.
+          '';
+          type = types.nullOr types.ints.u32;
+          default = null;
+          example = lib.literalExpression "1000";
+        };
+        hostname = mkOption {
+          description = ''
+            Use a custom hostname in the sandbox.
+
+            Only applies if `unshare.uts` is `true`.
+          '';
+          type = types.nullOr types.str;
+          default = null;
+          example = lib.literalExpression "nixos";
+        };
         prependFlags = mkOption {
           description = ''
             Extra flags inserted before the generated bubblewrap arguments.
@@ -298,6 +328,18 @@ in
       ++ lib.optionals (cfg.chdir != null) [
         "--chdir"
         cfg.chdir
+      ]
+      ++ lib.optionals (cfg.uid != null && cfg.unshare.user) [
+        "--uid"
+        (toString cfg.uid)
+      ]
+      ++ lib.optionals (cfg.gid != null && cfg.unshare.user) [
+        "--gid"
+        (toString cfg.gid)
+      ]
+      ++ lib.optionals (cfg.hostname != null && cfg.unshare.uts) [
+        "--hostname"
+        cfg.hostname
       ]
       ++ lib.optional cfg.unshare.user "--unshare-user"
       ++ lib.optional cfg.unshare.pid "--unshare-pid"
