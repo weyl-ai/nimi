@@ -4,7 +4,7 @@ let
 
   cfg = config.settings.bubblewrap;
 
-  roBindType = types.submodule {
+  bindType = types.submodule {
     options.src = mkOption {
       description = "Host path to bind into the sandbox.";
       type = types.str;
@@ -79,7 +79,7 @@ in
             For paths that may not exist on all systems, use `tryRoBinds`
             instead.
           '';
-          type = types.listOf roBindType;
+          type = types.listOf bindType;
           default = [
             {
               src = "/nix/store";
@@ -110,7 +110,7 @@ in
             may not exist on systems using systemd-resolved or other DNS
             configurations.
           '';
-          type = types.listOf roBindType;
+          type = types.listOf bindType;
           default = [
             {
               src = "/etc/resolv.conf";
@@ -121,6 +121,48 @@ in
             [
               { src = "/etc/resolv.conf"; dest = "/etc/resolv.conf"; }
               { src = "/etc/hosts"; dest = "/etc/hosts"; }
+            ]
+          '';
+        };
+        devBinds = mkOption {
+          description = ''
+            Device bind mounts from the host into the sandbox.
+
+            Each entry maps a host path (`src`) to a path inside the sandbox
+            (`dest`). Unlike regular bind mounts, device bind mounts allow
+            access to device nodes, making them suitable for binding paths
+            like `/dev/dri` for GPU access or `/dev/snd` for audio.
+
+            The sandbox can access device files at these paths. Use this when
+            you need to expose specific device nodes to sandboxed processes.
+
+            For paths that may not exist on all systems, use `tryDevBinds`
+            instead.
+          '';
+          type = types.listOf bindType;
+          default = [ ];
+          example = lib.literalExpression ''
+            [
+              { src = "/dev/dri"; dest = "/dev/dri"; }
+              { src = "/dev/snd"; dest = "/dev/snd"; }
+            ]
+          '';
+        };
+        tryDevBinds = mkOption {
+          description = ''
+            Device bind mounts that are skipped if the source does not exist.
+
+            Like `devBinds`, but uses `--dev-bind-try` which silently skips
+            the mount if the host path does not exist. Use this for device
+            paths that may not be present on all systems, such as GPU or
+            audio devices.
+          '';
+          type = types.listOf bindType;
+          default = [ ];
+          example = lib.literalExpression ''
+            [
+              { src = "/dev/dri"; dest = "/dev/dri"; }
+              { src = "/dev/nvidia0"; dest = "/dev/nvidia0"; }
             ]
           '';
         };
@@ -316,6 +358,22 @@ in
           dest
         ]
       ) cfg.tryRoBinds
+      ++ lib.concatMap (
+        { src, dest }:
+        [
+          "--dev-bind"
+          src
+          dest
+        ]
+      ) cfg.devBinds
+      ++ lib.concatMap (
+        { src, dest }:
+        [
+          "--dev-bind-try"
+          src
+          dest
+        ]
+      ) cfg.tryDevBinds
       ++ lib.optionals cfg.bind.dev [
         "--dev"
         "/dev"
