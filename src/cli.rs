@@ -2,7 +2,7 @@
 
 use std::path::{Path, PathBuf};
 
-use clap::{Parser, Subcommand, command};
+use clap::{Parser, Subcommand};
 use eyre::{Context, Result};
 use format_serde_error::SerdeError;
 use log::info;
