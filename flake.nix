@@ -24,9 +24,16 @@
           inherit nix2container;
         };
 
+      systems = [
+        "x86_64-darwin"
+        "aarch64-darwin"
+        "x86_64-linux"
+        "aarch64-linux"
+      ];
+
       eachSystem =
         fn:
-        lib.genAttrs lib.systems.flakeExposed (
+        lib.genAttrs systems (
           system:
           (fn rec {
             inherit system;
@@ -77,7 +84,7 @@
       flakeModules.default = lib.modules.importApply ./nix/modules/flake-parts.nix {
         inherit nix2container;
       };
-      nimiModules.default = import ./nix/modules/nimi.nix;
+      modules.nimi.default = import ./nix/modules/nimi.nix;
     };
 
   nixConfig = {
