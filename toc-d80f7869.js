@@ -8,7 +8,7 @@ class MDBookSidebarScrollbox extends HTMLElement {
         super();
     }
     connectedCallback() {
-        this.innerHTML = '<ol class="chapter"><li class="chapter-item expanded "><span class="chapter-link-wrapper"><a href="index.html"><strong aria-hidden="true">1.</strong> Nimi</a></span></li><li class="chapter-item expanded "><span class="chapter-link-wrapper"><a href="cli.html"><strong aria-hidden="true">2.</strong> Command Line Interface</a></span></li><li class="chapter-item expanded "><span class="chapter-link-wrapper"><a href="config-data.html"><strong aria-hidden="true">3.</strong> Config Data Files</a></span></li><li class="chapter-item expanded "><span class="chapter-link-wrapper"><a href="logging.html"><strong aria-hidden="true">4.</strong> Logging</a></span></li><li class="chapter-item expanded "><span class="chapter-link-wrapper"><a href="container.html"><strong aria-hidden="true">5.</strong> Containers</a></span></li><li class="chapter-item expanded "><span class="chapter-link-wrapper"><a href="overlay.html"><strong aria-hidden="true">6.</strong> Overlay</a></span></li><li class="chapter-item expanded "><span class="chapter-link-wrapper"><a href="flake-module.html"><strong aria-hidden="true">7.</strong> Flake Module</a></span></li><li class="chapter-item expanded "><span class="chapter-link-wrapper"><a href="nixos-module.html"><strong aria-hidden="true">8.</strong> NixOS Module</a></span></li><li class="chapter-item expanded "><span class="chapter-link-wrapper"><a href="home-module.html"><strong aria-hidden="true">9.</strong> Home Manager Module</a></span></li><li class="chapter-item expanded "><span class="chapter-link-wrapper"><a href="functions.html"><strong aria-hidden="true">10.</strong> Functions</a></span></li><li class="chapter-item expanded "><span class="chapter-link-wrapper"><a href="options.html"><strong aria-hidden="true">11.</strong> Options</a></span></li></ol>';
+        this.innerHTML = '<ol class="chapter"><li class="chapter-item expanded "><span class="chapter-link-wrapper"><a href="index.html"><strong aria-hidden="true">1.</strong> Nimi</a></span></li><li class="chapter-item expanded "><span class="chapter-link-wrapper"><a href="cli.html"><strong aria-hidden="true">2.</strong> Command Line Interface</a></span></li><li class="chapter-item expanded "><span class="chapter-link-wrapper"><a href="config-data.html"><strong aria-hidden="true">3.</strong> Config Data Files</a></span></li><li class="chapter-item expanded "><span class="chapter-link-wrapper"><a href="logging.html"><strong aria-hidden="true">4.</strong> Logging</a></span></li><li class="chapter-item expanded "><span class="chapter-link-wrapper"><a href="container.html"><strong aria-hidden="true">5.</strong> Containers</a></span></li><li class="chapter-item expanded "><span class="chapter-link-wrapper"><a href="sandbox.html"><strong aria-hidden="true">6.</strong> Sandbox</a></span></li><li class="chapter-item expanded "><span class="chapter-link-wrapper"><a href="overlay.html"><strong aria-hidden="true">7.</strong> Overlay</a></span></li><li class="chapter-item expanded "><span class="chapter-link-wrapper"><a href="flake-module.html"><strong aria-hidden="true">8.</strong> Flake Module</a></span></li><li class="chapter-item expanded "><span class="chapter-link-wrapper"><a href="nixos-module.html"><strong aria-hidden="true">9.</strong> NixOS Module</a></span></li><li class="chapter-item expanded "><span class="chapter-link-wrapper"><a href="home-module.html"><strong aria-hidden="true">10.</strong> Home Manager Module</a></span></li><li class="chapter-item expanded "><span class="chapter-link-wrapper"><a href="functions.html"><strong aria-hidden="true">11.</strong> Functions</a></span></li><li class="chapter-item expanded "><span class="chapter-link-wrapper"><a href="options.html"><strong aria-hidden="true">12.</strong> Options</a></span></li></ol>';
         // Set the current, active page, and reveal it if it's hidden
         let current_page = document.location.href.toString().split('#')[0].split('?')[0];
         if (current_page.endsWith('/')) {
@@ -40,14 +40,22 @@ class MDBookSidebarScrollbox extends HTMLElement {
         // Track and set sidebar scroll position
         this.addEventListener('click', e => {
             if (e.target.tagName === 'A') {
-                sessionStorage.setItem('sidebar-scroll', this.scrollTop);
+                const clientRect = e.target.getBoundingClientRect();
+                const sidebarRect = this.getBoundingClientRect();
+                sessionStorage.setItem('sidebar-scroll-offset', clientRect.top - sidebarRect.top);
             }
         }, { passive: true });
-        const sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
-        sessionStorage.removeItem('sidebar-scroll');
-        if (sidebarScrollTop) {
+        const sidebarScrollOffset = sessionStorage.getItem('sidebar-scroll-offset');
+        sessionStorage.removeItem('sidebar-scroll-offset');
+        if (sidebarScrollOffset !== null) {
             // preserve sidebar scroll position when navigating via links within sidebar
-            this.scrollTop = sidebarScrollTop;
+            const activeSection = this.querySelector('.active');
+            if (activeSection) {
+                const clientRect = activeSection.getBoundingClientRect();
+                const sidebarRect = this.getBoundingClientRect();
+                const currentOffset = clientRect.top - sidebarRect.top;
+                this.scrollTop += currentOffset - parseFloat(sidebarScrollOffset);
+            }
         } else {
             // scroll sidebar to current active section when navigating via
             // 'next/previous chapter' buttons

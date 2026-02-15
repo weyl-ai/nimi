@@ -35,10 +35,10 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "ayu";
-            window.path_to_searchindex_js = "searchindex-460b66ca.js";
+            window.path_to_searchindex_js = "searchindex-7af21c92.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-cd1ec5a1.js"></script>
+        <script src="toc-d80f7869.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -240,7 +240,7 @@ lazy attribute set of raw value</p>
 boolean</p>
 <p><em>Declared by:</em></p>
 <ul>
-<li><a href="file:///nix/store/3fmhx02c5rkpjhbfv5mcsx8njr1cl204-source/nix/modules/nimi/assertions.nix">/nix/store/3fmhx02c5rkpjhbfv5mcsx8njr1cl204-source/nix/modules/nimi/assertions.nix</a></li>
+<li><a href="file:///nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/assertions.nix">/nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/assertions.nix</a></li>
 </ul>
 <h2 id="assertionsmessage"><a class="header" href="#assertionsmessage">assertions.*.message</a></h2>
 <p>Message to print on assertion failure.</p>
@@ -248,17 +248,18 @@ boolean</p>
 string</p>
 <p><em>Declared by:</em></p>
 <ul>
-<li><a href="file:///nix/store/3fmhx02c5rkpjhbfv5mcsx8njr1cl204-source/nix/modules/nimi/assertions.nix">/nix/store/3fmhx02c5rkpjhbfv5mcsx8njr1cl204-source/nix/modules/nimi/assertions.nix</a></li>
+<li><a href="file:///nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/assertions.nix">/nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/assertions.nix</a></li>
 </ul>
 <h2 id="meta"><a class="header" href="#meta">meta</a></h2>
 <p><a href="https://ryantm.github.io/nixpkgs/stdenv/meta/"><code>meta</code></a> attributes to
 include in the output of generated <code>Nimi</code> packages</p>
 <p><em>Type:</em>
 lazy attribute set of raw value</p>
-<p><em>Default:</em>
-<code>{ }</code></p>
+<p><em>Default:</em></p>
+<pre><code class="language-nix">{ }
+</code></pre>
 <p><em>Example:</em></p>
-<pre><code>{
+<pre><code class="language-nix">{
   meta = {
     description = "My cool nimi package";
   };
@@ -267,17 +268,18 @@ lazy attribute set of raw value</p>
 </code></pre>
 <p><em>Declared by:</em></p>
 <ul>
-<li><a href="file:///nix/store/3fmhx02c5rkpjhbfv5mcsx8njr1cl204-source/nix/modules/nimi/meta.nix">/nix/store/3fmhx02c5rkpjhbfv5mcsx8njr1cl204-source/nix/modules/nimi/meta.nix</a></li>
+<li><a href="file:///nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/meta.nix">/nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/meta.nix</a></li>
 </ul>
 <h2 id="passthru"><a class="header" href="#passthru">passthru</a></h2>
 <p><a href="https://ryantm.github.io/nixpkgs/stdenv/stdenv/#var-stdenv-passthru"><code>passthru</code></a> attributes to
 include in the output of generated <code>Nimi</code> packages</p>
 <p><em>Type:</em>
 lazy attribute set of raw value</p>
-<p><em>Default:</em>
-<code>{ }</code></p>
+<p><em>Default:</em></p>
+<pre><code class="language-nix">{ }
+</code></pre>
 <p><em>Example:</em></p>
-<pre><code>{
+<pre><code class="language-nix">{
   passthru = {
     doXYZ = pkgs.writeShellApplication {
       name = "xyz-doer";
@@ -291,7 +293,7 @@ lazy attribute set of raw value</p>
 </code></pre>
 <p><em>Declared by:</em></p>
 <ul>
-<li><a href="file:///nix/store/3fmhx02c5rkpjhbfv5mcsx8njr1cl204-source/nix/modules/nimi/passthru.nix">/nix/store/3fmhx02c5rkpjhbfv5mcsx8njr1cl204-source/nix/modules/nimi/passthru.nix</a></li>
+<li><a href="file:///nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/passthru.nix">/nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/passthru.nix</a></li>
 </ul>
 <h2 id="services"><a class="header" href="#services">services</a></h2>
 <p>Services to run inside the nimi runtime.</p>
@@ -307,10 +309,11 @@ then overriding or extending its options.</p>
 <a href="https://nixos.org/manual/nixos/unstable/#modular-services">NixOS manual section on Modular Services</a>.</p>
 <p><em>Type:</em>
 lazy attribute set of (submodule)</p>
-<p><em>Default:</em>
-<code>{ }</code></p>
+<p><em>Default:</em></p>
+<pre><code class="language-nix">{ }
+</code></pre>
 <p><em>Example:</em></p>
-<pre><code>{
+<pre><code class="language-nix">{
   services."ghostunnel-plain-old" = {
     imports = [ pkgs.ghostunnel.services.default ];
     ghostunnel = {
@@ -339,7 +342,7 @@ lazy attribute set of (submodule)</p>
 </code></pre>
 <p><em>Declared by:</em></p>
 <ul>
-<li><a href="file:///nix/store/3fmhx02c5rkpjhbfv5mcsx8njr1cl204-source/nix/modules/nimi.nix">/nix/store/3fmhx02c5rkpjhbfv5mcsx8njr1cl204-source/nix/modules/nimi.nix</a></li>
+<li><a href="file:///nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi.nix">/nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi.nix</a></li>
 </ul>
 <h2 id="servicesnameconfigdata"><a class="header" href="#servicesnameconfigdata">services.&lt;name&gt;.configData</a></h2>
 <p>Configuration data files for the service</p>
@@ -349,10 +352,11 @@ This path is available in the <code>path</code> sub-option for each <code>config
 <p>This is particularly useful for services that support configuration reloading via signals (e.g., SIGHUP) or which pick up changes automatically, so that no downtime is required in order to reload the service.</p>
 <p><em>Type:</em>
 lazy attribute set of (submodule)</p>
-<p><em>Default:</em>
-<code>{ }</code></p>
+<p><em>Default:</em></p>
+<pre><code class="language-nix">{ }
+</code></pre>
 <p><em>Example:</em></p>
-<pre><code>{
+<pre><code class="language-nix">{
   "server.conf" = {
     text = ''
       port = 8080
@@ -367,18 +371,19 @@ lazy attribute set of (submodule)</p>
 </code></pre>
 <p><em>Declared by:</em></p>
 <ul>
-<li><a href="file:///nix/store/zgk0x05bmxlgnzapjsv6gqw4x90fw255-aqhcr0kv7d91rfm0ca77rbakjk5gkbq6-source/nixos/modules/system/service/portable/config-data.nix">/nix/store/zgk0x05bmxlgnzapjsv6gqw4x90fw255-aqhcr0kv7d91rfm0ca77rbakjk5gkbq6-source/nixos/modules/system/service/portable/config-data.nix</a></li>
+<li><a href="file:///nix/store/cds46yhzs1aw2b65453w6n07xjf33mqh-12azrzlywd7jmsg1q9n4dpqqgb33p2wl-source/nixos/modules/system/service/portable/config-data.nix">/nix/store/cds46yhzs1aw2b65453w6n07xjf33mqh-12azrzlywd7jmsg1q9n4dpqqgb33p2wl-source/nixos/modules/system/service/portable/config-data.nix</a></li>
 </ul>
 <h2 id="servicesnameconfigdatanameenable"><a class="header" href="#servicesnameconfigdatanameenable">services.&lt;name&gt;.configData.&lt;name&gt;.enable</a></h2>
 <p>Whether this configuration file should be generated.
 This option allows specific configuration files to be disabled.</p>
 <p><em>Type:</em>
 boolean</p>
-<p><em>Default:</em>
-<code>true</code></p>
+<p><em>Default:</em></p>
+<pre><code class="language-nix">true
+</code></pre>
 <p><em>Declared by:</em></p>
 <ul>
-<li><a href="file:///nix/store/zgk0x05bmxlgnzapjsv6gqw4x90fw255-aqhcr0kv7d91rfm0ca77rbakjk5gkbq6-source/nixos/modules/system/service/portable/config-data-item.nix">/nix/store/zgk0x05bmxlgnzapjsv6gqw4x90fw255-aqhcr0kv7d91rfm0ca77rbakjk5gkbq6-source/nixos/modules/system/service/portable/config-data-item.nix</a></li>
+<li><a href="file:///nix/store/cds46yhzs1aw2b65453w6n07xjf33mqh-12azrzlywd7jmsg1q9n4dpqqgb33p2wl-source/nixos/modules/system/service/portable/config-data-item.nix">/nix/store/cds46yhzs1aw2b65453w6n07xjf33mqh-12azrzlywd7jmsg1q9n4dpqqgb33p2wl-source/nixos/modules/system/service/portable/config-data-item.nix</a></li>
 </ul>
 <h2 id="servicesnameconfigdatanamename"><a class="header" href="#servicesnameconfigdatanamename">services.&lt;name&gt;.configData.&lt;name&gt;.name</a></h2>
 <p>Name of the configuration file (relative to the service’s configuration directory). Defaults to the attribute name.</p>
@@ -386,7 +391,7 @@ boolean</p>
 string</p>
 <p><em>Declared by:</em></p>
 <ul>
-<li><a href="file:///nix/store/zgk0x05bmxlgnzapjsv6gqw4x90fw255-aqhcr0kv7d91rfm0ca77rbakjk5gkbq6-source/nixos/modules/system/service/portable/config-data-item.nix">/nix/store/zgk0x05bmxlgnzapjsv6gqw4x90fw255-aqhcr0kv7d91rfm0ca77rbakjk5gkbq6-source/nixos/modules/system/service/portable/config-data-item.nix</a></li>
+<li><a href="file:///nix/store/cds46yhzs1aw2b65453w6n07xjf33mqh-12azrzlywd7jmsg1q9n4dpqqgb33p2wl-source/nixos/modules/system/service/portable/config-data-item.nix">/nix/store/cds46yhzs1aw2b65453w6n07xjf33mqh-12azrzlywd7jmsg1q9n4dpqqgb33p2wl-source/nixos/modules/system/service/portable/config-data-item.nix</a></li>
 </ul>
 <h2 id="servicesnameconfigdatanamepath"><a class="header" href="#servicesnameconfigdatanamepath">services.&lt;name&gt;.configData.&lt;name&gt;.path</a></h2>
 <p>The actual path where this configuration file will be available.
@@ -397,7 +402,7 @@ Other service managers may provide a relative path, in order to be unprivileged 
 string <em>(read only)</em></p>
 <p><em>Declared by:</em></p>
 <ul>
-<li><a href="file:///nix/store/zgk0x05bmxlgnzapjsv6gqw4x90fw255-aqhcr0kv7d91rfm0ca77rbakjk5gkbq6-source/nixos/modules/system/service/portable/config-data-item.nix">/nix/store/zgk0x05bmxlgnzapjsv6gqw4x90fw255-aqhcr0kv7d91rfm0ca77rbakjk5gkbq6-source/nixos/modules/system/service/portable/config-data-item.nix</a></li>
+<li><a href="file:///nix/store/cds46yhzs1aw2b65453w6n07xjf33mqh-12azrzlywd7jmsg1q9n4dpqqgb33p2wl-source/nixos/modules/system/service/portable/config-data-item.nix">/nix/store/cds46yhzs1aw2b65453w6n07xjf33mqh-12azrzlywd7jmsg1q9n4dpqqgb33p2wl-source/nixos/modules/system/service/portable/config-data-item.nix</a></li>
 </ul>
 <h2 id="servicesnameconfigdatanamesource"><a class="header" href="#servicesnameconfigdatanamesource">services.&lt;name&gt;.configData.&lt;name&gt;.source</a></h2>
 <p>Path of the source file.</p>
@@ -405,17 +410,18 @@ string <em>(read only)</em></p>
 absolute path</p>
 <p><em>Declared by:</em></p>
 <ul>
-<li><a href="file:///nix/store/zgk0x05bmxlgnzapjsv6gqw4x90fw255-aqhcr0kv7d91rfm0ca77rbakjk5gkbq6-source/nixos/modules/system/service/portable/config-data-item.nix">/nix/store/zgk0x05bmxlgnzapjsv6gqw4x90fw255-aqhcr0kv7d91rfm0ca77rbakjk5gkbq6-source/nixos/modules/system/service/portable/config-data-item.nix</a></li>
+<li><a href="file:///nix/store/cds46yhzs1aw2b65453w6n07xjf33mqh-12azrzlywd7jmsg1q9n4dpqqgb33p2wl-source/nixos/modules/system/service/portable/config-data-item.nix">/nix/store/cds46yhzs1aw2b65453w6n07xjf33mqh-12azrzlywd7jmsg1q9n4dpqqgb33p2wl-source/nixos/modules/system/service/portable/config-data-item.nix</a></li>
 </ul>
 <h2 id="servicesnameconfigdatanametext"><a class="header" href="#servicesnameconfigdatanametext">services.&lt;name&gt;.configData.&lt;name&gt;.text</a></h2>
 <p>Text content of the configuration file.</p>
 <p><em>Type:</em>
 null or strings concatenated with “\n”</p>
-<p><em>Default:</em>
-<code>null</code></p>
+<p><em>Default:</em></p>
+<pre><code class="language-nix">null
+</code></pre>
 <p><em>Declared by:</em></p>
 <ul>
-<li><a href="file:///nix/store/zgk0x05bmxlgnzapjsv6gqw4x90fw255-aqhcr0kv7d91rfm0ca77rbakjk5gkbq6-source/nixos/modules/system/service/portable/config-data-item.nix">/nix/store/zgk0x05bmxlgnzapjsv6gqw4x90fw255-aqhcr0kv7d91rfm0ca77rbakjk5gkbq6-source/nixos/modules/system/service/portable/config-data-item.nix</a></li>
+<li><a href="file:///nix/store/cds46yhzs1aw2b65453w6n07xjf33mqh-12azrzlywd7jmsg1q9n4dpqqgb33p2wl-source/nixos/modules/system/service/portable/config-data-item.nix">/nix/store/cds46yhzs1aw2b65453w6n07xjf33mqh-12azrzlywd7jmsg1q9n4dpqqgb33p2wl-source/nixos/modules/system/service/portable/config-data-item.nix</a></li>
 </ul>
 <h2 id="servicesnamemetamaintainers"><a class="header" href="#servicesnamemetamaintainers">services.&lt;name&gt;.meta.maintainers</a></h2>
 <p>List of maintainers of each module.
@@ -423,13 +429,15 @@ This option should be defined at most once per module.</p>
 <p>The option value is not a list of maintainers, but an attribute set that maps module file names to lists of maintainers.</p>
 <p><em>Type:</em>
 list of (maintainer)</p>
-<p><em>Default:</em>
-<code>[ ]</code></p>
-<p><em>Example:</em>
-<code>[ lib.maintainers.alice lib.maintainers.bob ]</code></p>
+<p><em>Default:</em></p>
+<pre><code class="language-nix">[ ]
+</code></pre>
+<p><em>Example:</em></p>
+<pre><code class="language-nix">[ lib.maintainers.alice lib.maintainers.bob ]
+</code></pre>
 <p><em>Declared by:</em></p>
 <ul>
-<li><a href="file:///nix/store/zgk0x05bmxlgnzapjsv6gqw4x90fw255-aqhcr0kv7d91rfm0ca77rbakjk5gkbq6-source/modules/generic/meta-maintainers.nix">/nix/store/zgk0x05bmxlgnzapjsv6gqw4x90fw255-aqhcr0kv7d91rfm0ca77rbakjk5gkbq6-source/modules/generic/meta-maintainers.nix</a></li>
+<li><a href="file:///nix/store/cds46yhzs1aw2b65453w6n07xjf33mqh-12azrzlywd7jmsg1q9n4dpqqgb33p2wl-source/modules/generic/meta-maintainers.nix">/nix/store/cds46yhzs1aw2b65453w6n07xjf33mqh-12azrzlywd7jmsg1q9n4dpqqgb33p2wl-source/modules/generic/meta-maintainers.nix</a></li>
 </ul>
 <h2 id="servicesnameprocessargv"><a class="header" href="#servicesnameprocessargv">services.&lt;name&gt;.process.argv</a></h2>
 <p>Command filename and arguments for starting this service.
@@ -438,11 +446,12 @@ If expansion of environmental variables is required then use
 a shell script or <code>importas</code> from <code>pkgs.execline</code>.</p>
 <p><em>Type:</em>
 list of (string or absolute path convertible to it)</p>
-<p><em>Example:</em>
-<code>[ (lib.getExe config.package) "--nobackground" ]</code></p>
+<p><em>Example:</em></p>
+<pre><code class="language-nix">[ (lib.getExe config.package) "--nobackground" ]
+</code></pre>
 <p><em>Declared by:</em></p>
 <ul>
-<li><a href="file:///nix/store/zgk0x05bmxlgnzapjsv6gqw4x90fw255-aqhcr0kv7d91rfm0ca77rbakjk5gkbq6-source/nixos/modules/system/service/portable/service.nix">/nix/store/zgk0x05bmxlgnzapjsv6gqw4x90fw255-aqhcr0kv7d91rfm0ca77rbakjk5gkbq6-source/nixos/modules/system/service/portable/service.nix</a></li>
+<li><a href="file:///nix/store/cds46yhzs1aw2b65453w6n07xjf33mqh-12azrzlywd7jmsg1q9n4dpqqgb33p2wl-source/nixos/modules/system/service/portable/service.nix">/nix/store/cds46yhzs1aw2b65453w6n07xjf33mqh-12azrzlywd7jmsg1q9n4dpqqgb33p2wl-source/nixos/modules/system/service/portable/service.nix</a></li>
 </ul>
 <h2 id="servicesnameservices"><a class="header" href="#servicesnameservices">services.&lt;name&gt;.services</a></h2>
 <p>A collection of <a href="https://nixos.org/manual/nixos/unstable/#modular-services">modular services</a> that are configured in one go.</p>
@@ -450,11 +459,12 @@ list of (string or absolute path convertible to it)</p>
 It <strong>does not</strong> automatically create any other relationship between services (e.g. systemd slices), unless perhaps such a behavior is explicitly defined and enabled in another option.</p>
 <p><em>Type:</em>
 attribute set of (submodule)</p>
-<p><em>Default:</em>
-<code>{ }</code></p>
+<p><em>Default:</em></p>
+<pre><code class="language-nix">{ }
+</code></pre>
 <p><em>Declared by:</em></p>
 <ul>
-<li><a href="file:///nix/store/zgk0x05bmxlgnzapjsv6gqw4x90fw255-aqhcr0kv7d91rfm0ca77rbakjk5gkbq6-source/nixos/modules/system/service/portable/service.nix">/nix/store/zgk0x05bmxlgnzapjsv6gqw4x90fw255-aqhcr0kv7d91rfm0ca77rbakjk5gkbq6-source/nixos/modules/system/service/portable/service.nix</a></li>
+<li><a href="file:///nix/store/cds46yhzs1aw2b65453w6n07xjf33mqh-12azrzlywd7jmsg1q9n4dpqqgb33p2wl-source/nixos/modules/system/service/portable/service.nix">/nix/store/cds46yhzs1aw2b65453w6n07xjf33mqh-12azrzlywd7jmsg1q9n4dpqqgb33p2wl-source/nixos/modules/system/service/portable/service.nix</a></li>
 </ul>
 <h2 id="settingsbinname"><a class="header" href="#settingsbinname">settings.binName</a></h2>
 <p>Name of the binary to generate with your nimi wrapper.</p>
@@ -462,17 +472,539 @@ attribute set of (submodule)</p>
 from “nimi” to whatever you select.</p>
 <p><em>Type:</em>
 string</p>
-<p><em>Default:</em>
-<code>"nimi"</code></p>
+<p><em>Default:</em></p>
+<pre><code class="language-nix">"nimi"
+</code></pre>
 <p><em>Example:</em></p>
-<pre><code>{
+<pre><code class="language-nix">{
   settings.binName = "my-awesome-service-runner";
 }
 
 </code></pre>
 <p><em>Declared by:</em></p>
 <ul>
-<li><a href="file:///nix/store/3fmhx02c5rkpjhbfv5mcsx8njr1cl204-source/nix/modules/nimi/bin-name.nix">/nix/store/3fmhx02c5rkpjhbfv5mcsx8njr1cl204-source/nix/modules/nimi/bin-name.nix</a></li>
+<li><a href="file:///nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/bin-name.nix">/nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/bin-name.nix</a></li>
+</ul>
+<h2 id="settingsbubblewrap"><a class="header" href="#settingsbubblewrap">settings.bubblewrap</a></h2>
+<p>Sandbox configuration for running nimi inside bubblewrap.</p>
+<p>Use this to isolate the nimi process manager and its services from the
+host system. Bubblewrap provides lightweight containerization through
+Linux namespaces without requiring root privileges or a container runtime.</p>
+<p>The defaults provide a minimal sandbox that can access the Nix store and
+network while isolating the process namespace, filesystem writes, and
+other system resources. Adjust these settings based on what your services
+actually need.</p>
+<p>Note that these options only take effect when using <code>nimi.mkBwrap</code> to
+build your sandboxed binary.</p>
+<p><em>Type:</em>
+submodule</p>
+<p><em>Default:</em></p>
+<pre><code class="language-nix">{ }
+</code></pre>
+<p><em>Example:</em></p>
+<pre><code class="language-nix">{
+  environment.APP_ENV = "production";
+  chdir = "/app";
+  roBinds = [
+    { src = "/nix/store"; dest = "/nix/store"; }
+    { src = "/etc/ssl"; dest = "/etc/ssl"; }
+  ];
+  extraTmpfs = [ "/app/cache" ];
+}
+
+</code></pre>
+<p><em>Declared by:</em></p>
+<ul>
+<li><a href="file:///nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/bubblewrap.nix">/nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/bubblewrap.nix</a></li>
+</ul>
+<h2 id="settingsbubblewrapappendflags"><a class="header" href="#settingsbubblewrapappendflags">settings.bubblewrap.appendFlags</a></h2>
+<p>Extra flags appended after the generated bubblewrap arguments.</p>
+<p>Use this for one-off bwrap options not covered by the module.
+These appear at the end of the command line, just before <code>--</code>.</p>
+<p><em>Type:</em>
+list of string</p>
+<p><em>Default:</em></p>
+<pre><code class="language-nix">[ ]
+</code></pre>
+<p><em>Example:</em></p>
+<pre><code class="language-nix">[ "--cap-add" "CAP_NET_BIND_SERVICE" ]
+
+</code></pre>
+<p><em>Declared by:</em></p>
+<ul>
+<li><a href="file:///nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/bubblewrap.nix">/nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/bubblewrap.nix</a></li>
+</ul>
+<h2 id="settingsbubblewrapbinddev"><a class="header" href="#settingsbubblewrapbinddev">settings.bubblewrap.bind.dev</a></h2>
+<p>Whether to enable bind /dev into the sandbox.</p>
+<p><em>Type:</em>
+boolean</p>
+<p><em>Default:</em></p>
+<pre><code class="language-nix">true
+</code></pre>
+<p><em>Example:</em></p>
+<pre><code class="language-nix">true
+</code></pre>
+<p><em>Declared by:</em></p>
+<ul>
+<li><a href="file:///nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/bubblewrap.nix">/nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/bubblewrap.nix</a></li>
+</ul>
+<h2 id="settingsbubblewrapbindproc"><a class="header" href="#settingsbubblewrapbindproc">settings.bubblewrap.bind.proc</a></h2>
+<p>Whether to enable bind /proc into the sandbox.</p>
+<p><em>Type:</em>
+boolean</p>
+<p><em>Default:</em></p>
+<pre><code class="language-nix">true
+</code></pre>
+<p><em>Example:</em></p>
+<pre><code class="language-nix">true
+</code></pre>
+<p><em>Declared by:</em></p>
+<ul>
+<li><a href="file:///nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/bubblewrap.nix">/nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/bubblewrap.nix</a></li>
+</ul>
+<h2 id="settingsbubblewrapchdir"><a class="header" href="#settingsbubblewrapchdir">settings.bubblewrap.chdir</a></h2>
+<p>Working directory to change to after entering the sandbox.</p>
+<p>Set this to control where services start. When <code>null</code>, bubblewrap
+does not change directory and the process inherits the caller’s
+working directory (usually <code>/</code>).</p>
+<p><em>Type:</em>
+null or string</p>
+<p><em>Default:</em></p>
+<pre><code class="language-nix">null
+</code></pre>
+<p><em>Example:</em></p>
+<pre><code class="language-nix">"/app"
+</code></pre>
+<p><em>Declared by:</em></p>
+<ul>
+<li><a href="file:///nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/bubblewrap.nix">/nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/bubblewrap.nix</a></li>
+</ul>
+<h2 id="settingsbubblewrapdevbinds"><a class="header" href="#settingsbubblewrapdevbinds">settings.bubblewrap.devBinds</a></h2>
+<p>Device bind mounts from the host into the sandbox.</p>
+<p>Each entry maps a host path (<code>src</code>) to a path inside the sandbox
+(<code>dest</code>). Unlike regular bind mounts, device bind mounts allow
+access to device nodes, making them suitable for binding paths
+like <code>/dev/dri</code> for GPU access or <code>/dev/snd</code> for audio.</p>
+<p>The sandbox can access device files at these paths. Use this when
+you need to expose specific device nodes to sandboxed processes.</p>
+<p>For paths that may not exist on all systems, use <code>tryDevBinds</code>
+instead.</p>
+<p><em>Type:</em>
+list of (submodule)</p>
+<p><em>Default:</em></p>
+<pre><code class="language-nix">[ ]
+</code></pre>
+<p><em>Example:</em></p>
+<pre><code class="language-nix">[
+  { src = "/dev/dri"; dest = "/dev/dri"; }
+  { src = "/dev/snd"; dest = "/dev/snd"; }
+]
+
+</code></pre>
+<p><em>Declared by:</em></p>
+<ul>
+<li><a href="file:///nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/bubblewrap.nix">/nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/bubblewrap.nix</a></li>
+</ul>
+<h2 id="settingsbubblewrapdevbindsdest"><a class="header" href="#settingsbubblewrapdevbindsdest">settings.bubblewrap.devBinds.*.dest</a></h2>
+<p>Path inside the sandbox where <code>src</code> appears.</p>
+<p><em>Type:</em>
+string</p>
+<p><em>Example:</em></p>
+<pre><code class="language-nix">"/etc/resolv.conf"
+</code></pre>
+<p><em>Declared by:</em></p>
+<ul>
+<li><a href="file:///nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/bubblewrap.nix">/nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/bubblewrap.nix</a></li>
+</ul>
+<h2 id="settingsbubblewrapdevbindssrc"><a class="header" href="#settingsbubblewrapdevbindssrc">settings.bubblewrap.devBinds.*.src</a></h2>
+<p>Host path to bind into the sandbox.</p>
+<p><em>Type:</em>
+string</p>
+<p><em>Example:</em></p>
+<pre><code class="language-nix">"/etc/resolv.conf"
+</code></pre>
+<p><em>Declared by:</em></p>
+<ul>
+<li><a href="file:///nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/bubblewrap.nix">/nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/bubblewrap.nix</a></li>
+</ul>
+<h2 id="settingsbubblewrapdiewithparent"><a class="header" href="#settingsbubblewrapdiewithparent">settings.bubblewrap.dieWithParent</a></h2>
+<p>Whether to enable terminate sandbox when parent process exits.</p>
+<p><em>Type:</em>
+boolean</p>
+<p><em>Default:</em></p>
+<pre><code class="language-nix">true
+</code></pre>
+<p><em>Example:</em></p>
+<pre><code class="language-nix">true
+</code></pre>
+<p><em>Declared by:</em></p>
+<ul>
+<li><a href="file:///nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/bubblewrap.nix">/nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/bubblewrap.nix</a></li>
+</ul>
+<h2 id="settingsbubblewrapenvironment"><a class="header" href="#settingsbubblewrapenvironment">settings.bubblewrap.environment</a></h2>
+<p>Environment variables to set inside the sandbox.</p>
+<p>These are passed to bubblewrap via <code>--setenv</code> and are available to
+the nimi process manager and all services it spawns.</p>
+<p><em>Type:</em>
+lazy attribute set of string</p>
+<p><em>Default:</em></p>
+<pre><code class="language-nix">{ }
+</code></pre>
+<p><em>Example:</em></p>
+<pre><code class="language-nix">{
+  APP_ENV = "production";
+  LOG_LEVEL = "info";
+}
+
+</code></pre>
+<p><em>Declared by:</em></p>
+<ul>
+<li><a href="file:///nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/bubblewrap.nix">/nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/bubblewrap.nix</a></li>
+</ul>
+<h2 id="settingsbubblewrapextratmpfs"><a class="header" href="#settingsbubblewrapextratmpfs">settings.bubblewrap.extraTmpfs</a></h2>
+<p>Additional tmpfs mounts appended to the default list.</p>
+<p>Use this to add writable scratch directories without replacing
+the standard set. For complete control, override <code>tmpfs</code> directly.</p>
+<p><em>Type:</em>
+list of string</p>
+<p><em>Default:</em></p>
+<pre><code class="language-nix">[ ]
+</code></pre>
+<p><em>Example:</em></p>
+<pre><code class="language-nix">[ "/app/cache" "/app/tmp" ]
+
+</code></pre>
+<p><em>Declared by:</em></p>
+<ul>
+<li><a href="file:///nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/bubblewrap.nix">/nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/bubblewrap.nix</a></li>
+</ul>
+<h2 id="settingsbubblewrapflags"><a class="header" href="#settingsbubblewrapflags">settings.bubblewrap.flags</a></h2>
+<p>Final list of flags passed to the <code>bwrap</code> executable.</p>
+<p>This is computed automatically from the other options in this
+module. You can read it to inspect the generated command line, but
+setting it directly replaces the generated flags entirely and may
+break the sandbox. Prefer <code>prependFlags</code> or <code>appendFlags</code> to inject
+custom arguments.</p>
+<p><em>Type:</em>
+list of string</p>
+<p><em>Default:</em></p>
+<pre><code class="language-nix">[ ]
+</code></pre>
+<p><em>Declared by:</em></p>
+<ul>
+<li><a href="file:///nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/bubblewrap.nix">/nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/bubblewrap.nix</a></li>
+</ul>
+<h2 id="settingsbubblewrapgid"><a class="header" href="#settingsbubblewrapgid">settings.bubblewrap.gid</a></h2>
+<p>Use a custom group id in the sandbox.</p>
+<p>Only applies if <code>unshare.user</code> is <code>true</code>.</p>
+<p><em>Type:</em>
+null or 32 bit unsigned integer; between 0 and 4294967295 (both inclusive)</p>
+<p><em>Default:</em></p>
+<pre><code class="language-nix">null
+</code></pre>
+<p><em>Example:</em></p>
+<pre><code class="language-nix">1000
+</code></pre>
+<p><em>Declared by:</em></p>
+<ul>
+<li><a href="file:///nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/bubblewrap.nix">/nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/bubblewrap.nix</a></li>
+</ul>
+<h2 id="settingsbubblewraphostname"><a class="header" href="#settingsbubblewraphostname">settings.bubblewrap.hostname</a></h2>
+<p>Use a custom hostname in the sandbox.</p>
+<p>Only applies if <code>unshare.uts</code> is <code>true</code>.</p>
+<p><em>Type:</em>
+null or string</p>
+<p><em>Default:</em></p>
+<pre><code class="language-nix">null
+</code></pre>
+<p><em>Example:</em></p>
+<pre><code class="language-nix">nixos
+</code></pre>
+<p><em>Declared by:</em></p>
+<ul>
+<li><a href="file:///nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/bubblewrap.nix">/nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/bubblewrap.nix</a></li>
+</ul>
+<h2 id="settingsbubblewrapprependflags"><a class="header" href="#settingsbubblewrapprependflags">settings.bubblewrap.prependFlags</a></h2>
+<p>Extra flags inserted before the generated bubblewrap arguments.</p>
+<p>Use this when argument order matters, for example to set options
+that must appear early in the bwrap invocation.</p>
+<p><em>Type:</em>
+list of string</p>
+<p><em>Default:</em></p>
+<pre><code class="language-nix">[ ]
+</code></pre>
+<p><em>Example:</em></p>
+<pre><code class="language-nix">[ "--clearenv" ]
+
+</code></pre>
+<p><em>Declared by:</em></p>
+<ul>
+<li><a href="file:///nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/bubblewrap.nix">/nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/bubblewrap.nix</a></li>
+</ul>
+<h2 id="settingsbubblewraprobinds"><a class="header" href="#settingsbubblewraprobinds">settings.bubblewrap.roBinds</a></h2>
+<p>Read-only bind mounts from the host into the sandbox.</p>
+<p>Each entry maps a host path (<code>src</code>) to a path inside the sandbox
+(<code>dest</code>). The sandbox can read these paths but not modify them.</p>
+<p>The default includes <code>/nix/store</code> (required for Nix binaries) and
+<code>/sys</code> (for system information). Override this list carefully;
+omitting <code>/nix/store</code> will break most Nix-built programs.</p>
+<p>For paths that may not exist on all systems, use <code>tryRoBinds</code>
+instead.</p>
+<p><em>Type:</em>
+list of (submodule)</p>
+<p><em>Default:</em></p>
+<pre><code class="language-nix">[
+  {
+    dest = "/nix/store";
+    src = "/nix/store";
+  }
+  {
+    dest = "/sys";
+    src = "/sys";
+  }
+]
+</code></pre>
+<p><em>Example:</em></p>
+<pre><code class="language-nix">[
+  { src = "/nix/store"; dest = "/nix/store"; }
+  { src = "/etc/ssl"; dest = "/etc/ssl"; }
+  { src = "/run/secrets"; dest = "/secrets"; }
+]
+
+</code></pre>
+<p><em>Declared by:</em></p>
+<ul>
+<li><a href="file:///nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/bubblewrap.nix">/nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/bubblewrap.nix</a></li>
+</ul>
+<h2 id="settingsbubblewraprobindsdest"><a class="header" href="#settingsbubblewraprobindsdest">settings.bubblewrap.roBinds.*.dest</a></h2>
+<p>Path inside the sandbox where <code>src</code> appears.</p>
+<p><em>Type:</em>
+string</p>
+<p><em>Example:</em></p>
+<pre><code class="language-nix">"/etc/resolv.conf"
+</code></pre>
+<p><em>Declared by:</em></p>
+<ul>
+<li><a href="file:///nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/bubblewrap.nix">/nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/bubblewrap.nix</a></li>
+</ul>
+<h2 id="settingsbubblewraprobindssrc"><a class="header" href="#settingsbubblewraprobindssrc">settings.bubblewrap.roBinds.*.src</a></h2>
+<p>Host path to bind into the sandbox.</p>
+<p><em>Type:</em>
+string</p>
+<p><em>Example:</em></p>
+<pre><code class="language-nix">"/etc/resolv.conf"
+</code></pre>
+<p><em>Declared by:</em></p>
+<ul>
+<li><a href="file:///nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/bubblewrap.nix">/nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/bubblewrap.nix</a></li>
+</ul>
+<h2 id="settingsbubblewraptmpfs"><a class="header" href="#settingsbubblewraptmpfs">settings.bubblewrap.tmpfs</a></h2>
+<p>Paths to mount as temporary filesystems inside the sandbox.</p>
+<p>These mounts are writable but ephemeral; contents are lost when the
+sandbox exits. They also hide any host content at the same path.</p>
+<p>The default list creates writable areas for common system paths
+while keeping the sandbox isolated. The <code>/nix</code> tmpfs is mounted
+first, then <code>/nix/store</code> is bind-mounted on top, allowing writes
+elsewhere under <code>/nix</code> (like <code>/nix/var</code>) without touching the
+real store.</p>
+<p><em>Type:</em>
+list of string</p>
+<p><em>Default:</em></p>
+<pre><code class="language-nix">[
+  "/nix"
+  "/tmp"
+  "/run"
+  "/var"
+  "/etc"
+]
+</code></pre>
+<p><em>Example:</em></p>
+<pre><code class="language-nix">[ "/tmp" "/run" ]
+
+</code></pre>
+<p><em>Declared by:</em></p>
+<ul>
+<li><a href="file:///nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/bubblewrap.nix">/nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/bubblewrap.nix</a></li>
+</ul>
+<h2 id="settingsbubblewraptrydevbinds"><a class="header" href="#settingsbubblewraptrydevbinds">settings.bubblewrap.tryDevBinds</a></h2>
+<p>Device bind mounts that are skipped if the source does not exist.</p>
+<p>Like <code>devBinds</code>, but uses <code>--dev-bind-try</code> which silently skips
+the mount if the host path does not exist. Use this for device
+paths that may not be present on all systems, such as GPU or
+audio devices.</p>
+<p><em>Type:</em>
+list of (submodule)</p>
+<p><em>Default:</em></p>
+<pre><code class="language-nix">[ ]
+</code></pre>
+<p><em>Example:</em></p>
+<pre><code class="language-nix">[
+  { src = "/dev/dri"; dest = "/dev/dri"; }
+  { src = "/dev/nvidia0"; dest = "/dev/nvidia0"; }
+]
+
+</code></pre>
+<p><em>Declared by:</em></p>
+<ul>
+<li><a href="file:///nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/bubblewrap.nix">/nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/bubblewrap.nix</a></li>
+</ul>
+<h2 id="settingsbubblewraptrydevbindsdest"><a class="header" href="#settingsbubblewraptrydevbindsdest">settings.bubblewrap.tryDevBinds.*.dest</a></h2>
+<p>Path inside the sandbox where <code>src</code> appears.</p>
+<p><em>Type:</em>
+string</p>
+<p><em>Example:</em></p>
+<pre><code class="language-nix">"/etc/resolv.conf"
+</code></pre>
+<p><em>Declared by:</em></p>
+<ul>
+<li><a href="file:///nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/bubblewrap.nix">/nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/bubblewrap.nix</a></li>
+</ul>
+<h2 id="settingsbubblewraptrydevbindssrc"><a class="header" href="#settingsbubblewraptrydevbindssrc">settings.bubblewrap.tryDevBinds.*.src</a></h2>
+<p>Host path to bind into the sandbox.</p>
+<p><em>Type:</em>
+string</p>
+<p><em>Example:</em></p>
+<pre><code class="language-nix">"/etc/resolv.conf"
+</code></pre>
+<p><em>Declared by:</em></p>
+<ul>
+<li><a href="file:///nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/bubblewrap.nix">/nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/bubblewrap.nix</a></li>
+</ul>
+<h2 id="settingsbubblewraptryrobinds"><a class="header" href="#settingsbubblewraptryrobinds">settings.bubblewrap.tryRoBinds</a></h2>
+<p>Read-only bind mounts that are skipped if the source does not exist.</p>
+<p>Like <code>roBinds</code>, but uses <code>--ro-bind-try</code> which silently skips the
+mount if the host path does not exist. Use this for paths that may
+not be present on all systems.</p>
+<p>The default includes <code>/etc/resolv.conf</code> for DNS resolution, which
+may not exist on systems using systemd-resolved or other DNS
+configurations.</p>
+<p><em>Type:</em>
+list of (submodule)</p>
+<p><em>Default:</em></p>
+<pre><code class="language-nix">[
+  {
+    dest = "/etc/resolv.conf";
+    src = "/etc/resolv.conf";
+  }
+]
+</code></pre>
+<p><em>Example:</em></p>
+<pre><code class="language-nix">[
+  { src = "/etc/resolv.conf"; dest = "/etc/resolv.conf"; }
+  { src = "/etc/hosts"; dest = "/etc/hosts"; }
+]
+
+</code></pre>
+<p><em>Declared by:</em></p>
+<ul>
+<li><a href="file:///nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/bubblewrap.nix">/nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/bubblewrap.nix</a></li>
+</ul>
+<h2 id="settingsbubblewraptryrobindsdest"><a class="header" href="#settingsbubblewraptryrobindsdest">settings.bubblewrap.tryRoBinds.*.dest</a></h2>
+<p>Path inside the sandbox where <code>src</code> appears.</p>
+<p><em>Type:</em>
+string</p>
+<p><em>Example:</em></p>
+<pre><code class="language-nix">"/etc/resolv.conf"
+</code></pre>
+<p><em>Declared by:</em></p>
+<ul>
+<li><a href="file:///nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/bubblewrap.nix">/nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/bubblewrap.nix</a></li>
+</ul>
+<h2 id="settingsbubblewraptryrobindssrc"><a class="header" href="#settingsbubblewraptryrobindssrc">settings.bubblewrap.tryRoBinds.*.src</a></h2>
+<p>Host path to bind into the sandbox.</p>
+<p><em>Type:</em>
+string</p>
+<p><em>Example:</em></p>
+<pre><code class="language-nix">"/etc/resolv.conf"
+</code></pre>
+<p><em>Declared by:</em></p>
+<ul>
+<li><a href="file:///nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/bubblewrap.nix">/nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/bubblewrap.nix</a></li>
+</ul>
+<h2 id="settingsbubblewrapuid"><a class="header" href="#settingsbubblewrapuid">settings.bubblewrap.uid</a></h2>
+<p>Use a custom user id in the sandbox.</p>
+<p>Only applies if <code>unshare.user</code> is <code>true</code>.</p>
+<p><em>Type:</em>
+null or 32 bit unsigned integer; between 0 and 4294967295 (both inclusive)</p>
+<p><em>Default:</em></p>
+<pre><code class="language-nix">null
+</code></pre>
+<p><em>Example:</em></p>
+<pre><code class="language-nix">1000
+</code></pre>
+<p><em>Declared by:</em></p>
+<ul>
+<li><a href="file:///nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/bubblewrap.nix">/nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/bubblewrap.nix</a></li>
+</ul>
+<h2 id="settingsbubblewrapunsharecgroup"><a class="header" href="#settingsbubblewrapunsharecgroup">settings.bubblewrap.unshare.cgroup</a></h2>
+<p>Whether to enable create a new cgroup namespace.</p>
+<p><em>Type:</em>
+boolean</p>
+<p><em>Default:</em></p>
+<pre><code class="language-nix">true
+</code></pre>
+<p><em>Example:</em></p>
+<pre><code class="language-nix">true
+</code></pre>
+<p><em>Declared by:</em></p>
+<ul>
+<li><a href="file:///nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/bubblewrap.nix">/nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/bubblewrap.nix</a></li>
+</ul>
+<h2 id="settingsbubblewrapunshareipc"><a class="header" href="#settingsbubblewrapunshareipc">settings.bubblewrap.unshare.ipc</a></h2>
+<p>Whether to enable create a new IPC namespace.</p>
+<p><em>Type:</em>
+boolean</p>
+<p><em>Default:</em></p>
+<pre><code class="language-nix">true
+</code></pre>
+<p><em>Example:</em></p>
+<pre><code class="language-nix">true
+</code></pre>
+<p><em>Declared by:</em></p>
+<ul>
+<li><a href="file:///nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/bubblewrap.nix">/nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/bubblewrap.nix</a></li>
+</ul>
+<h2 id="settingsbubblewrapunsharepid"><a class="header" href="#settingsbubblewrapunsharepid">settings.bubblewrap.unshare.pid</a></h2>
+<p>Whether to enable create a new PID namespace.</p>
+<p><em>Type:</em>
+boolean</p>
+<p><em>Default:</em></p>
+<pre><code class="language-nix">true
+</code></pre>
+<p><em>Example:</em></p>
+<pre><code class="language-nix">true
+</code></pre>
+<p><em>Declared by:</em></p>
+<ul>
+<li><a href="file:///nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/bubblewrap.nix">/nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/bubblewrap.nix</a></li>
+</ul>
+<h2 id="settingsbubblewrapunshareuser"><a class="header" href="#settingsbubblewrapunshareuser">settings.bubblewrap.unshare.user</a></h2>
+<p>Whether to enable create a new user namespace.</p>
+<p><em>Type:</em>
+boolean</p>
+<p><em>Default:</em></p>
+<pre><code class="language-nix">true
+</code></pre>
+<p><em>Example:</em></p>
+<pre><code class="language-nix">true
+</code></pre>
+<p><em>Declared by:</em></p>
+<ul>
+<li><a href="file:///nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/bubblewrap.nix">/nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/bubblewrap.nix</a></li>
+</ul>
+<h2 id="settingsbubblewrapunshareuts"><a class="header" href="#settingsbubblewrapunshareuts">settings.bubblewrap.unshare.uts</a></h2>
+<p>Whether to enable create a new UTS (hostname) namespace.</p>
+<p><em>Type:</em>
+boolean</p>
+<p><em>Default:</em></p>
+<pre><code class="language-nix">true
+</code></pre>
+<p><em>Example:</em></p>
+<pre><code class="language-nix">true
+</code></pre>
+<p><em>Declared by:</em></p>
+<ul>
+<li><a href="file:///nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/bubblewrap.nix">/nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/bubblewrap.nix</a></li>
 </ul>
 <h2 id="settingscontainer"><a class="header" href="#settingscontainer">settings.container</a></h2>
 <p>Configures nimi’s builtin container generation.</p>
@@ -482,11 +1014,12 @@ string</p>
 check there for further documentation.</p>
 <p><em>Type:</em>
 submodule</p>
-<p><em>Default:</em>
-<code>{ }</code></p>
+<p><em>Default:</em></p>
+<pre><code class="language-nix">{ }
+</code></pre>
 <p><em>Declared by:</em></p>
 <ul>
-<li><a href="file:///nix/store/3fmhx02c5rkpjhbfv5mcsx8njr1cl204-source/nix/modules/nimi/container.nix">/nix/store/3fmhx02c5rkpjhbfv5mcsx8njr1cl204-source/nix/modules/nimi/container.nix</a></li>
+<li><a href="file:///nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/container.nix">/nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/container.nix</a></li>
 </ul>
 <h2 id="settingscontainercopytoroot"><a class="header" href="#settingscontainercopytoroot">settings.container.copyToRoot</a></h2>
 <p>A derivation (or list of derivations) copied in the image root directory
@@ -497,32 +1030,41 @@ be copied to the image root. For instance, to get bash and
 coreutils in the image <code>/bin</code>:</p>
 <p><em>Type:</em>
 (list of path in the Nix store) or path in the Nix store convertible to it</p>
-<p><em>Default:</em>
-<code>[ ]</code></p>
+<p><em>Default:</em></p>
+<pre><code class="language-nix">[ ]
+</code></pre>
 <p><em>Declared by:</em></p>
 <ul>
-<li><a href="file:///nix/store/3fmhx02c5rkpjhbfv5mcsx8njr1cl204-source/nix/modules/nimi/container.nix">/nix/store/3fmhx02c5rkpjhbfv5mcsx8njr1cl204-source/nix/modules/nimi/container.nix</a></li>
+<li><a href="file:///nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/container.nix">/nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/container.nix</a></li>
 </ul>
 <h2 id="settingscontainerfromimage"><a class="header" href="#settingscontainerfromimage">settings.container.fromImage</a></h2>
 <p>An image that is used as base image of this image;</p>
 <p>Use <code>nix2container.pullImage</code> or <code>nix2container.pullImageFromManifest</code> to supply this.</p>
 <p><em>Type:</em>
 null or path in the Nix store</p>
-<p><em>Default:</em>
-<code>null</code></p>
+<p><em>Default:</em></p>
+<pre><code class="language-nix">null
+</code></pre>
 <p><em>Declared by:</em></p>
 <ul>
-<li><a href="file:///nix/store/3fmhx02c5rkpjhbfv5mcsx8njr1cl204-source/nix/modules/nimi/container.nix">/nix/store/3fmhx02c5rkpjhbfv5mcsx8njr1cl204-source/nix/modules/nimi/container.nix</a></li>
+<li><a href="file:///nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/container.nix">/nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/container.nix</a></li>
 </ul>
 <h2 id="settingscontainerimageconfig"><a class="header" href="#settingscontainerimageconfig">settings.container.imageConfig</a></h2>
 <p>An attribute set describing an image configuration as defined in the <a href="https://github.com/opencontainers/image-spec/blob/8b9d41f48198a7d6d0a5c1a12dc2d1f7f47fc97f/specs-go/v1/config.go#L23">OCI image specification</a>.</p>
 <p><em>Type:</em>
 open submodule of lazy attribute set of anything</p>
-<p><em>Default:</em>
-<code>{ }</code></p>
+<p><em>Default:</em></p>
+<pre><code class="language-nix">{
+  WorkingDir = {
+    _type = "override";
+    content = "/root";
+    priority = 1000;
+  };
+}
+</code></pre>
 <p><em>Declared by:</em></p>
 <ul>
-<li><a href="file:///nix/store/3fmhx02c5rkpjhbfv5mcsx8njr1cl204-source/nix/modules/nimi/container.nix">/nix/store/3fmhx02c5rkpjhbfv5mcsx8njr1cl204-source/nix/modules/nimi/container.nix</a></li>
+<li><a href="file:///nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/container.nix">/nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/container.nix</a></li>
 </ul>
 <h2 id="settingscontainerinitializenixdatabase"><a class="header" href="#settingscontainerinitializenixdatabase">settings.container.initializeNixDatabase</a></h2>
 <p>To initialize the Nix database with all store paths added into the image.</p>
@@ -530,11 +1072,12 @@ open submodule of lazy attribute set of anything</p>
 for instance to build an image used by a CI to run Nix builds.</p>
 <p><em>Type:</em>
 boolean</p>
-<p><em>Default:</em>
-<code>false</code></p>
+<p><em>Default:</em></p>
+<pre><code class="language-nix">false
+</code></pre>
 <p><em>Declared by:</em></p>
 <ul>
-<li><a href="file:///nix/store/3fmhx02c5rkpjhbfv5mcsx8njr1cl204-source/nix/modules/nimi/container.nix">/nix/store/3fmhx02c5rkpjhbfv5mcsx8njr1cl204-source/nix/modules/nimi/container.nix</a></li>
+<li><a href="file:///nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/container.nix">/nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/container.nix</a></li>
 </ul>
 <h2 id="settingscontainerlayers"><a class="header" href="#settingscontainerlayers">settings.container.layers</a></h2>
 <p>A list of layers built with the <code>nix2container.buildLayer</code> function.</p>
@@ -543,11 +1086,12 @@ boolean</p>
 to speed up build and push time.</p>
 <p><em>Type:</em>
 list of path in the Nix store</p>
-<p><em>Default:</em>
-<code>[ ]</code></p>
+<p><em>Default:</em></p>
+<pre><code class="language-nix">[ ]
+</code></pre>
 <p><em>Declared by:</em></p>
 <ul>
-<li><a href="file:///nix/store/3fmhx02c5rkpjhbfv5mcsx8njr1cl204-source/nix/modules/nimi/container.nix">/nix/store/3fmhx02c5rkpjhbfv5mcsx8njr1cl204-source/nix/modules/nimi/container.nix</a></li>
+<li><a href="file:///nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/container.nix">/nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/container.nix</a></li>
 </ul>
 <h2 id="settingscontainermaxlayers"><a class="header" href="#settingscontainermaxlayers">settings.container.maxLayers</a></h2>
 <p>The maximum number of layers to create.</p>
@@ -555,41 +1099,45 @@ list of path in the Nix store</p>
 <p>Note this is applied on the image layers and not on layers added with the <code>buildImage.layers</code> attribute.</p>
 <p><em>Type:</em>
 positive integer, meaning &gt;0</p>
-<p><em>Default:</em>
-<code>1</code></p>
+<p><em>Default:</em></p>
+<pre><code class="language-nix">1
+</code></pre>
 <p><em>Declared by:</em></p>
 <ul>
-<li><a href="file:///nix/store/3fmhx02c5rkpjhbfv5mcsx8njr1cl204-source/nix/modules/nimi/container.nix">/nix/store/3fmhx02c5rkpjhbfv5mcsx8njr1cl204-source/nix/modules/nimi/container.nix</a></li>
+<li><a href="file:///nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/container.nix">/nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/container.nix</a></li>
 </ul>
 <h2 id="settingscontainername"><a class="header" href="#settingscontainername">settings.container.name</a></h2>
 <p>The name of the generated image</p>
 <p><em>Type:</em>
 string</p>
-<p><em>Default:</em>
-<code>"nimi-container"</code></p>
+<p><em>Default:</em></p>
+<pre><code class="language-nix">"nimi-container"
+</code></pre>
 <p><em>Declared by:</em></p>
 <ul>
-<li><a href="file:///nix/store/3fmhx02c5rkpjhbfv5mcsx8njr1cl204-source/nix/modules/nimi/container.nix">/nix/store/3fmhx02c5rkpjhbfv5mcsx8njr1cl204-source/nix/modules/nimi/container.nix</a></li>
+<li><a href="file:///nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/container.nix">/nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/container.nix</a></li>
 </ul>
 <h2 id="settingscontainerperms"><a class="header" href="#settingscontainerperms">settings.container.perms</a></h2>
 <p>A list of file permisssions which are set when the tar layer is created: these permissions are not written to the Nix store.</p>
 <p><em>Type:</em>
 list of (submodule)</p>
-<p><em>Default:</em>
-<code>[ ]</code></p>
+<p><em>Default:</em></p>
+<pre><code class="language-nix">[ ]
+</code></pre>
 <p><em>Declared by:</em></p>
 <ul>
-<li><a href="file:///nix/store/3fmhx02c5rkpjhbfv5mcsx8njr1cl204-source/nix/modules/nimi/container.nix">/nix/store/3fmhx02c5rkpjhbfv5mcsx8njr1cl204-source/nix/modules/nimi/container.nix</a></li>
+<li><a href="file:///nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/container.nix">/nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/container.nix</a></li>
 </ul>
 <h2 id="settingscontainertag"><a class="header" href="#settingscontainertag">settings.container.tag</a></h2>
 <p>The tag for the generated image to use</p>
 <p><em>Type:</em>
 string</p>
-<p><em>Default:</em>
-<code>"latest"</code></p>
+<p><em>Default:</em></p>
+<pre><code class="language-nix">"latest"
+</code></pre>
 <p><em>Declared by:</em></p>
 <ul>
-<li><a href="file:///nix/store/3fmhx02c5rkpjhbfv5mcsx8njr1cl204-source/nix/modules/nimi/container.nix">/nix/store/3fmhx02c5rkpjhbfv5mcsx8njr1cl204-source/nix/modules/nimi/container.nix</a></li>
+<li><a href="file:///nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/container.nix">/nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/container.nix</a></li>
 </ul>
 <h2 id="settingslogging"><a class="header" href="#settingslogging">settings.logging</a></h2>
 <p>Logging behavior for the nimi process manager.</p>
@@ -602,10 +1150,11 @@ service stdout or stderr is appended to the same file, preserving
 execution order as best as possible.</p>
 <p><em>Type:</em>
 submodule</p>
-<p><em>Default:</em>
-<code>{ }</code></p>
+<p><em>Default:</em></p>
+<pre><code class="language-nix">{ }
+</code></pre>
 <p><em>Example:</em></p>
-<pre><code>{
+<pre><code class="language-nix">{
   enable = true;
   logsDir = "my_logs";
 }
@@ -613,7 +1162,7 @@ submodule</p>
 </code></pre>
 <p><em>Declared by:</em></p>
 <ul>
-<li><a href="file:///nix/store/3fmhx02c5rkpjhbfv5mcsx8njr1cl204-source/nix/modules/nimi/logging.nix">/nix/store/3fmhx02c5rkpjhbfv5mcsx8njr1cl204-source/nix/modules/nimi/logging.nix</a></li>
+<li><a href="file:///nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/logging.nix">/nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/logging.nix</a></li>
 </ul>
 <h2 id="settingsloggingenable"><a class="header" href="#settingsloggingenable">settings.logging.enable</a></h2>
 <p>Whether to enable If per-service log files should be written to <code>settings.logging.logsDir</code>.</p>
@@ -622,13 +1171,15 @@ are created.
 .</p>
 <p><em>Type:</em>
 boolean</p>
-<p><em>Default:</em>
-<code>false</code></p>
-<p><em>Example:</em>
-<code>true</code></p>
+<p><em>Default:</em></p>
+<pre><code class="language-nix">false
+</code></pre>
+<p><em>Example:</em></p>
+<pre><code class="language-nix">true
+</code></pre>
 <p><em>Declared by:</em></p>
 <ul>
-<li><a href="file:///nix/store/3fmhx02c5rkpjhbfv5mcsx8njr1cl204-source/nix/modules/nimi/logging.nix">/nix/store/3fmhx02c5rkpjhbfv5mcsx8njr1cl204-source/nix/modules/nimi/logging.nix</a></li>
+<li><a href="file:///nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/logging.nix">/nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/logging.nix</a></li>
 </ul>
 <h2 id="settingslogginglogsdir"><a class="header" href="#settingslogginglogsdir">settings.logging.logsDir</a></h2>
 <p>Directory to create and write per-service logs to.</p>
@@ -636,11 +1187,12 @@ boolean</p>
 and writes one file per service.</p>
 <p><em>Type:</em>
 string</p>
-<p><em>Default:</em>
-<code>"nimi_logs"</code></p>
+<p><em>Default:</em></p>
+<pre><code class="language-nix">"nimi_logs"
+</code></pre>
 <p><em>Declared by:</em></p>
 <ul>
-<li><a href="file:///nix/store/3fmhx02c5rkpjhbfv5mcsx8njr1cl204-source/nix/modules/nimi/logging.nix">/nix/store/3fmhx02c5rkpjhbfv5mcsx8njr1cl204-source/nix/modules/nimi/logging.nix</a></li>
+<li><a href="file:///nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/logging.nix">/nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/logging.nix</a></li>
 </ul>
 <h2 id="settingsrestart"><a class="header" href="#settingsrestart">settings.restart</a></h2>
 <p>Restart policy for the nimi process manager.</p>
@@ -652,10 +1204,11 @@ deployment. For development you might disable restarts entirely, while
 production workloads usually benefit from a bounded or always-on policy.</p>
 <p><em>Type:</em>
 submodule</p>
-<p><em>Default:</em>
-<code>{ }</code></p>
+<p><em>Default:</em></p>
+<pre><code class="language-nix">{ }
+</code></pre>
 <p><em>Example:</em></p>
-<pre><code>{
+<pre><code class="language-nix">{
   mode = "up-to-count";
   time = 500;
   count = 3;
@@ -664,7 +1217,7 @@ submodule</p>
 </code></pre>
 <p><em>Declared by:</em></p>
 <ul>
-<li><a href="file:///nix/store/3fmhx02c5rkpjhbfv5mcsx8njr1cl204-source/nix/modules/nimi/restart.nix">/nix/store/3fmhx02c5rkpjhbfv5mcsx8njr1cl204-source/nix/modules/nimi/restart.nix</a></li>
+<li><a href="file:///nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/restart.nix">/nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/restart.nix</a></li>
 </ul>
 <h2 id="settingsrestartcount"><a class="header" href="#settingsrestartcount">settings.restart.count</a></h2>
 <p>Maximum number of restart attempts when <code>mode</code> is <code>up-to-count</code>.</p>
@@ -672,13 +1225,15 @@ submodule</p>
 intervene or change the configuration.</p>
 <p><em>Type:</em>
 positive integer, meaning &gt;0</p>
-<p><em>Default:</em>
-<code>5</code></p>
-<p><em>Example:</em>
-<code>3</code></p>
+<p><em>Default:</em></p>
+<pre><code class="language-nix">5
+</code></pre>
+<p><em>Example:</em></p>
+<pre><code class="language-nix">3
+</code></pre>
 <p><em>Declared by:</em></p>
 <ul>
-<li><a href="file:///nix/store/3fmhx02c5rkpjhbfv5mcsx8njr1cl204-source/nix/modules/nimi/restart.nix">/nix/store/3fmhx02c5rkpjhbfv5mcsx8njr1cl204-source/nix/modules/nimi/restart.nix</a></li>
+<li><a href="file:///nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/restart.nix">/nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/restart.nix</a></li>
 </ul>
 <h2 id="settingsrestartmode"><a class="header" href="#settingsrestartmode">settings.restart.mode</a></h2>
 <p>Selects the restart behavior.</p>
@@ -693,13 +1248,15 @@ persistent. Choose <code>always</code> when continuous availability matters
 more than surfacing the failure.</p>
 <p><em>Type:</em>
 one of “never”, “up-to-count”, “always”</p>
-<p><em>Default:</em>
-<code>"always"</code></p>
-<p><em>Example:</em>
-<code>"up-to-count"</code></p>
+<p><em>Default:</em></p>
+<pre><code class="language-nix">"always"
+</code></pre>
+<p><em>Example:</em></p>
+<pre><code class="language-nix">"up-to-count"
+</code></pre>
 <p><em>Declared by:</em></p>
 <ul>
-<li><a href="file:///nix/store/3fmhx02c5rkpjhbfv5mcsx8njr1cl204-source/nix/modules/nimi/restart.nix">/nix/store/3fmhx02c5rkpjhbfv5mcsx8njr1cl204-source/nix/modules/nimi/restart.nix</a></li>
+<li><a href="file:///nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/restart.nix">/nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/restart.nix</a></li>
 </ul>
 <h2 id="settingsrestarttime"><a class="header" href="#settingsrestarttime">settings.restart.time</a></h2>
 <p>Delay between restarts in milliseconds.</p>
@@ -707,13 +1264,15 @@ one of “never”, “up-to-count”, “always”</p>
 recover resources or for dependent services to come back.</p>
 <p><em>Type:</em>
 positive integer, meaning &gt;0</p>
-<p><em>Default:</em>
-<code>1000</code></p>
-<p><em>Example:</em>
-<code>250</code></p>
+<p><em>Default:</em></p>
+<pre><code class="language-nix">1000
+</code></pre>
+<p><em>Example:</em></p>
+<pre><code class="language-nix">250
+</code></pre>
 <p><em>Declared by:</em></p>
 <ul>
-<li><a href="file:///nix/store/3fmhx02c5rkpjhbfv5mcsx8njr1cl204-source/nix/modules/nimi/restart.nix">/nix/store/3fmhx02c5rkpjhbfv5mcsx8njr1cl204-source/nix/modules/nimi/restart.nix</a></li>
+<li><a href="file:///nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/restart.nix">/nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/restart.nix</a></li>
 </ul>
 <h2 id="settingsstartup"><a class="header" href="#settingsstartup">settings.startup</a></h2>
 <p>Startup behavior for the nimi process manager.</p>
@@ -725,17 +1284,18 @@ once per process manager start.</p>
 If you do not need a startup hook, leave it unset.</p>
 <p><em>Type:</em>
 submodule</p>
-<p><em>Default:</em>
-<code>{ }</code></p>
+<p><em>Default:</em></p>
+<pre><code class="language-nix">{ }
+</code></pre>
 <p><em>Example:</em></p>
-<pre><code>{
+<pre><code class="language-nix">{
   runOnStartup = /nix/store/abcd1234-my-init/bin/my-init;
 }
 
 </code></pre>
 <p><em>Declared by:</em></p>
 <ul>
-<li><a href="file:///nix/store/3fmhx02c5rkpjhbfv5mcsx8njr1cl204-source/nix/modules/nimi/startup.nix">/nix/store/3fmhx02c5rkpjhbfv5mcsx8njr1cl204-source/nix/modules/nimi/startup.nix</a></li>
+<li><a href="file:///nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/startup.nix">/nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/startup.nix</a></li>
 </ul>
 <h2 id="settingsstartuprunonstartup"><a class="header" href="#settingsstartuprunonstartup">settings.startup.runOnStartup</a></h2>
 <p>Path to a binary to run once at startup.</p>
@@ -748,10 +1308,11 @@ a long-running process, configure it as a service instead.</p>
 <p>Set to <code>null</code> to disable.</p>
 <p><em>Type:</em>
 null or path in the Nix store</p>
-<p><em>Default:</em>
-<code>null</code></p>
+<p><em>Default:</em></p>
+<pre><code class="language-nix">null
+</code></pre>
 <p><em>Example:</em></p>
-<pre><code>lib.getExe (
+<pre><code class="language-nix">lib.getExe (
   pkgs.writeShellApplication {
     name = "example-startup-script";
     text = ''
@@ -763,7 +1324,7 @@ null or path in the Nix store</p>
 </code></pre>
 <p><em>Declared by:</em></p>
 <ul>
-<li><a href="file:///nix/store/3fmhx02c5rkpjhbfv5mcsx8njr1cl204-source/nix/modules/nimi/startup.nix">/nix/store/3fmhx02c5rkpjhbfv5mcsx8njr1cl204-source/nix/modules/nimi/startup.nix</a></li>
+<li><a href="file:///nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/startup.nix">/nix/store/lwmfqvsl2frf336jhwhwfxl3g99p8wb7-source/nix/modules/nimi/startup.nix</a></li>
 </ul>
 
                     </main>

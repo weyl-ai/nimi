@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Nimi - Nimi</title>
+        <title>Sandbox - Nimi</title>
 
 
         <!-- Custom HTML head -->
@@ -177,68 +177,102 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="nimi"><a class="header" href="#nimi"><code>Nimi</code></a></h1>
-<p><code>Nimi</code> is a tiny process manager built for running NixOS modular services in containers and other minimal environments. It turns a NixOS modular services configuration into a reliable, lightweight runtime that starts services, streams logs, and applies predictable restart and startup behavior.</p>
-<h1 id="why-nimi"><a class="header" href="#why-nimi">Why <code>Nimi</code></a></h1>
-<p>Modular services are composable Nix modules: you can import a service, override options, and instantiate it multiple times with different settings. <code>Nimi</code> is the runtime that brings those modules to life outside a full init system (i.e. <code>systemd</code>).</p>
-<p>If you are new to modular services, the upstream explanation is the best place to start: <a href="https://nixos.org/manual/nixos/unstable/#modular-services">NixOS Modular Services Manual</a>.</p>
-<h1 id="whats-in-the-box"><a class="header" href="#whats-in-the-box">What’s in the box</a></h1>
+                        <h1 id="sandbox"><a class="header" href="#sandbox">Sandbox</a></h1>
+<p><code>Nimi</code> provides a lightweight sandbox runner via <code>mkBwrap</code>. It uses
+<a href="https://github.com/containers/bubblewrap">bubblewrap</a> to run your services in
+an isolated environment without requiring container runtimes like Docker or
+Podman.</p>
+<h2 id="what-it-provides"><a class="header" href="#what-it-provides">What it provides</a></h2>
 <ul>
-<li>A small PID 1 style runtime suitable for containers.</li>
-<li>Clean process execution with structured startup and shutdown flow.</li>
-<li>Configurable restart behavior for resilient services.</li>
-<li>One-time startup hook for quick initialization steps.</li>
-<li>Clear, instance-per-service configuration using modular services.</li>
+<li><strong>Isolated filesystem</strong>: A tmpfs-based root with selective host paths bound read-only.</li>
+<li><strong>Environment variables</strong>: Set via <code>settings.bubblewrap.environment</code>.</li>
+<li><strong>Working directory</strong>: Set via <code>settings.bubblewrap.chdir</code>.</li>
+<li><strong>Namespace isolation</strong>: Separate user, PID, UTS, IPC, and cgroup namespaces by default.</li>
+<li><strong>Writable directories</strong>: <code>/tmp</code>, <code>/run</code>, <code>/var</code>, <code>/etc</code> are tmpfs mounts for runtime writes.</li>
+<li><strong>Nix store access</strong>: <code>/nix/store</code> is bind-mounted read-only so binaries can access their dependencies.</li>
 </ul>
-<h1 id="usage"><a class="header" href="#usage">Usage</a></h1>
-<ol>
-<li>Define services using modular service modules.</li>
-<li>Evaluate the config with <code>nimi.mkNimiBin</code> to produce JSON.</li>
-<li>Run <code>Nimi</code> with the generated config to launch and supervise services.</li>
-</ol>
-<h1 id="quick-start"><a class="header" href="#quick-start">Quick-start</a></h1>
-<p>Minimal Nix configuration:</p>
-<pre><code class="language-nix">packages.${system}.myNimiWrapper = pkgs.nimi.mkNimiBin {
-  services."my-service" = {
-    imports = [ pkgs.some-application.services.default ];
-    someApplication = {
-      listen = "0.0.0.0:8080";
-      dataDir = "/var/lib/my-service";
-    };
+<h2 id="minimal-example"><a class="header" href="#minimal-example">Minimal example</a></h2>
+<pre><code class="language-nix">pkgs.nimi.mkBwrap {
+  services."my-app" = {
+    process.argv = [ (lib.getExe pkgs.my-app) ];
   };
-  settings.restart.mode = "up-to-count";
-  settings.restart.time = 2000;
+  settings.bubblewrap = {
+    environment.MY_VAR = "value";
+    chdir = "/app";
+    extraTmpfs = [ "/data" ];
+  };
 }
 </code></pre>
-<p>Run the generated config:</p>
-<pre><code class="language-bash">nix run .#myNimiWrapper
+<p>Run the sandbox:</p>
+<pre><code class="language-bash">nix run .#my-sandbox
 </code></pre>
-<h1 id="configuration-highlights"><a class="header" href="#configuration-highlights">Configuration highlights</a></h1>
+<h2 id="extended-example"><a class="header" href="#extended-example">Extended example</a></h2>
+<pre><code class="language-nix">pkgs.nimi.mkBwrap {
+  services."web-server" = {
+    process.argv = [ (lib.getExe pkgs.nginx) "-g" "daemon off;" ];
+  };
+  settings.bubblewrap = {
+    environment = {
+      APP_ENV = "production";
+      LOG_LEVEL = "info";
+    };
+    chdir = "/srv";
+    roBinds = [
+      { src = "/nix/store"; dest = "/nix/store"; }
+      { src = "/etc/ssl"; dest = "/etc/ssl"; }
+      { src = "/run/secrets"; dest = "/secrets"; }
+    ];
+    extraTmpfs = [ "/var/cache/nginx" ];
+  };
+}
+</code></pre>
+<h2 id="how-it-works"><a class="header" href="#how-it-works">How it works</a></h2>
+<ol>
+<li><strong>Build time</strong>: The nimi binary is wrapped in a shell script that invokes <code>bwrap</code>.</li>
+<li><strong>Execution</strong>: <code>bwrap</code> runs the nimi binary inside an isolated namespace with:
 <ul>
-<li><code>services</code>: declare named service instances by importing modular service
-modules and overriding options per instance.</li>
-<li><code>settings.restart</code>: choose <code>never</code>, <code>up-to-count</code>, or <code>always</code>, and tune delay
-and retry count.</li>
-<li><code>settings.startup</code>: optionally run one binary before services start.</li>
-<li><code>settings.logging</code>: write per-service log files; see <code>docs/logging.md</code>.</li>
-<li><code>configData</code>: define per-service config files; see <code>docs/config-data.md</code>.</li>
+<li>Tmpfs mounts created first (providing writable areas)</li>
+<li>Read-only bind mounts layered on top (e.g., <code>/nix/store</code> over <code>/nix</code>)</li>
+<li><code>/dev</code> and <code>/proc</code> bound from the host</li>
+<li>Environment variables and working directory applied</li>
+<li>Namespaces unshared according to configuration</li>
 </ul>
-<h1 id="next-steps"><a class="header" href="#next-steps">Next steps</a></h1>
+</li>
+</ol>
+<h2 id="differences-from-containers"><a class="header" href="#differences-from-containers">Differences from containers</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Feature</th><th><code>mkBwrap</code></th><th><code>mkContainerImage</code></th></tr>
+</thead>
+<tbody>
+<tr><td>Runtime dependencies</td><td><code>bubblewrap</code> only</td><td>Container runtime (Docker, Podman)</td></tr>
+<tr><td>Image format</td><td>None (uses Nix store directly)</td><td>OCI image</td></tr>
+<tr><td>Startup time</td><td>Fast (no image loading)</td><td>Depends on runtime</td></tr>
+<tr><td>Portability</td><td>Linux only</td><td>Any OCI-compatible runtime</td></tr>
+<tr><td>Base images</td><td>Not supported</td><td>Supported via <code>fromImage</code></td></tr>
+<tr><td>Root filesystem</td><td>Tmpfs with bind mounts</td><td>Layered image filesystem</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="notes"><a class="header" href="#notes">Notes</a></h2>
 <ul>
-<li>Explore service definitions and compose them per environment.</li>
-<li>Use restart policies to match reliability needs.</li>
-<li>Add a startup hook for migrations, warm-ups, or one-time init tasks.</li>
-<li>Create containers with <code>docs/container.md</code>.</li>
-<li>Add <code>pkgs.nimi</code> to an existing <code>nixpkgs</code> instance with <code>docs/overlay.md</code>.</li>
-<li>Integrate with Nix tooling: <code>docs/flake-module.md</code>, <code>docs/nixos-module.md</code>, and <code>docs/home-module.md</code>.</li>
+<li>The sandbox requires Linux with user namespaces enabled.</li>
+<li>Writes go to tmpfs directories; they are lost when the sandbox exits.</li>
+<li>Signal handling (Ctrl+C) is supported.</li>
+<li>The entrypoint is always the generated nimi runner from <code>mkNimiBin</code>.</li>
+<li>Not available on macOS (<code>meta.badPlatforms</code> includes Darwin).</li>
 </ul>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="container.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                            </a>
 
-                            <a rel="next prefetch" href="cli.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="overlay.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -248,8 +282,11 @@ and retry count.</li>
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="container.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                    </a>
 
-                    <a rel="next prefetch" href="cli.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="overlay.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>
