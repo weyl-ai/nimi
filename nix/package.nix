@@ -22,7 +22,12 @@ rustPlatform.buildRustPackage (finalAttrs: {
     ];
   };
 
-  cargoLock.lockFile = ../Cargo.lock;
+  cargoLock = {
+    lockFile = ../Cargo.lock;
+    outputHashes = {
+      "mprocs-0.8.3" = "sha256-VtpKmbwsgwTMx5/GmWGz4j0IqelhX/xQyBhvp0rNHpk=";
+    };
+  };
 
   nativeBuildInputs = [ clippy ];
 

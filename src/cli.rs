@@ -66,7 +66,7 @@ pub struct Cli {
 }
 
 impl Cli {
-    async fn read_config(path: &Path) -> Result<Config> {
+    pub async fn read_config(path: &Path) -> Result<Config> {
         let config = fs::read_to_string(&path)
             .await
             .wrap_err("Failed to read config file from filesystem")?;

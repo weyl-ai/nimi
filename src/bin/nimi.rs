@@ -6,12 +6,7 @@ use clap::Parser;
 use env_logger::Env;
 use eyre::{Context, Result};
 
-use crate::{cli::Cli, subreaper::Subreaper};
-
-pub mod cli;
-pub mod config;
-pub mod process_manager;
-pub mod subreaper;
+use nimi::{cli::Cli, subreaper::Subreaper};
 
 #[tokio::main]
 async fn main() -> Result<()> {
