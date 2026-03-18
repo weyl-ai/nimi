@@ -45,9 +45,9 @@ async fn main() -> Result<()> {
         .await
         .wrap_err("Failed to create config directories")?;
 
-    let (mprocs_config, mprocs_settings) = convert_config(&config, &config_dirs);
+    let (procs, mprocs_settings) = convert_config(&config, &config_dirs);
 
-    lib::mprocs::run_with_config(mprocs_config.procs, mprocs_settings)
+    lib::run_with_config(procs, mprocs_settings)
         .await
         .map_err(|e| eyre::eyre!("{:#}", e))
         .wrap_err("mprocs TUI failed")

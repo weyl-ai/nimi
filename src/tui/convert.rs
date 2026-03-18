@@ -6,8 +6,7 @@ use std::path::Path;
 use crate::config::Config;
 use crate::process_manager::settings::{Restart, RestartMode};
 use crate::process_manager::{Service, Settings as NimiSettings};
-use lib::config::{CmdConfig, ProcConfig};
-use lib::proc::StopSignal;
+use lib::{CmdConfig, ProcConfig, StopSignal};
 
 pub fn convert_service(
     name: &str,
@@ -27,7 +26,7 @@ pub fn convert_service(
         .collect()
     });
 
-    let defaults = lib::settings::Settings::default();
+    let defaults = lib::Settings::default();
 
     ProcConfig {
         name: name.to_owned(),
@@ -55,12 +54,10 @@ fn convert_autorestart(restart: &Restart) -> bool {
 pub fn convert_config(
     config: &Config,
     config_dirs: &HashMap<String, std::path::PathBuf>,
-) -> (lib::config::Config, lib::settings::Settings) {
-    let mprocs_settings = lib::settings::Settings::default();
-    let mut mprocs_config = lib::config::Config::make_default(&mprocs_settings)
-        .expect("Config::make_default should not fail");
+) -> (Vec<ProcConfig>, lib::Settings) {
+    let mprocs_settings = lib::Settings::default();
 
-    mprocs_config.procs = config
+    let procs = config
         .services
         .iter()
         .map(|(name, service)| {
@@ -69,11 +66,11 @@ pub fn convert_config(
         })
         .collect();
 
-    (mprocs_config, mprocs_settings)
+    (procs, mprocs_settings)
 }
 
-pub fn convert_settings() -> lib::settings::Settings {
-    lib::settings::Settings::default()
+pub fn convert_settings() -> lib::Settings {
+    lib::Settings::default()
 }
 
 #[cfg(test)]
@@ -221,19 +218,15 @@ mod tests {
         );
 
         let config_dirs = HashMap::new();
-        let (mprocs_config, _settings) = convert_config(&config, &config_dirs);
+        let (procs, _settings) = convert_config(&config, &config_dirs);
 
-        assert_eq!(mprocs_config.procs.len(), 2);
+        assert_eq!(procs.len(), 2);
 
-        let names: Vec<&str> = mprocs_config
-            .procs
-            .iter()
-            .map(|p| p.name.as_str())
-            .collect();
+        let names: Vec<&str> = procs.iter().map(|p| p.name.as_str()).collect();
         assert!(names.contains(&"web"));
         assert!(names.contains(&"worker"));
 
-        for proc in &mprocs_config.procs {
+        for proc in &procs {
             assert!(
                 proc.autorestart,
                 "{} should have autorestart=true",
@@ -246,9 +239,9 @@ mod tests {
     fn test_empty_config() {
         let config = make_config_with_restart(vec![], RestartMode::Never);
         let config_dirs = HashMap::new();
-        let (mprocs_config, _settings) = convert_config(&config, &config_dirs);
+        let (procs, _settings) = convert_config(&config, &config_dirs);
 
-        assert!(mprocs_config.procs.is_empty());
+        assert!(procs.is_empty());
     }
 
     #[test]

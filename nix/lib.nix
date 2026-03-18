@@ -163,6 +163,19 @@ rec {
     evaluatedConfig:
     let
       cfgJson = toNimiJson evaluatedConfig;
+
+      nimiTui = writeShellApplication {
+        name = evaluatedConfig.settings.binName;
+        runtimeInputs = [ nimi ];
+        text = ''
+          exec nimi-tui --config "${cfgJson}" "$@"
+        '';
+        inherit (evaluatedConfig) passthru meta;
+      };
+
+      passthru = evaluatedConfig.passthru // {
+        tui = nimiTui;
+      };
     in
     builtins.addErrorContext errorCtxs.failedToCreateNimiWrapper (writeShellApplication {
       name = evaluatedConfig.settings.binName;
@@ -170,7 +183,8 @@ rec {
       text = ''
         exec nimi --config "${cfgJson}" run "$@"
       '';
-      inherit (evaluatedConfig) passthru meta;
+      inherit (evaluatedConfig) meta;
+      inherit passthru;
     });
 
   /**

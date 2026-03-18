@@ -25,7 +25,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
   cargoLock = {
     lockFile = ../Cargo.lock;
     outputHashes = {
-      "mprocs-0.8.3" = "sha256-VtpKmbwsgwTMx5/GmWGz4j0IqelhX/xQyBhvp0rNHpk=";
+      "mprocs-0.8.2" = "sha256-MgW/+Ozn+MFiqRpVKtRdV9K511LMtmT999dphhPR2jU=";
     };
   };
 

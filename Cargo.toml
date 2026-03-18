@@ -7,7 +7,7 @@ format_serde_error = "0.3.0"
 futures = "0.3.31"
 libc = "0.2.176"
 log = "0.4.29"
-mprocs = "0.8.3"
+mprocs = "0.8.2"
 nix = {version = "0.28.0", features = ["process", "signal"]}
 serde = {version = "1.0.228", features = ["serde_derive"]}
 serde_json = "1.0.148"
@@ -21,7 +21,7 @@ tokio-util = "0.7.17"
 tempfile = "3"
 
 [patch.crates-io]
-mprocs = { git = "https://github.com/baileylu121/mprocs", rev = "efd8e30f8bb3864362fdf9160415464d72008d9c" }
+mprocs = { git = "https://github.com/baileylu121/mprocs", rev = "0d762fb2b11d1f0e01ee74894918592779310b0e" }
 
 [package]
 name = "nimi"
