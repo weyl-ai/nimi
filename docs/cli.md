@@ -20,6 +20,7 @@ The `Nimi` CLI is the runtime entry-point for a generated modular services confi
 # Flags
 
 - `--config`, `-c`: path to the generated JSON configuration file.
+- `--tui`: run an `mprocs` frontend on top of `Nimi`
 
 # Runtime behavior
 
@@ -34,4 +35,5 @@ The `Nimi` CLI is the runtime entry-point for a generated modular services confi
 ```bash
 nimi --config ./result/nimi-config.json validate
 nimi --config ./result/nimi-config.json run
+nimi --config ./result/nimi-config.json run --tui
 ```

@@ -90,13 +90,17 @@ impl Cli {
 
                 Ok(())
             }
-            Command::Run => {
+            Command::Run { tui } => {
                 info!("Launching process manager...");
 
-                ProcessManager::new(config.services, config.settings)
-                    .run()
-                    .await
-                    .wrap_err("Failed to run processes")?;
+                let proc_man = ProcessManager::new(config.services, config.settings);
+
+                if tui {
+                    proc_man.run_mprocs().await
+                } else {
+                    proc_man.run().await
+                }
+                .wrap_err("Failed to run processes")?;
 
                 info!("Process manager finished");
 
@@ -113,5 +117,9 @@ pub enum Command {
     Validate,
 
     /// Run nimi services based on the config file
-    Run,
+    Run {
+        /// If the tui should be launched
+        #[arg(long)]
+        tui: bool,
+    },
 }

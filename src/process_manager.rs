@@ -5,6 +5,7 @@
 
 use eyre::{Context, Result};
 use futures::future::OptionFuture;
+use libmprocs::{ProcConfig, StopSignal, mprocs};
 use log::{debug, info};
 use std::process::Stdio;
 use std::{collections::HashMap, env, io::ErrorKind, path::PathBuf, sync::Arc};
@@ -20,7 +21,9 @@ pub use service::Service;
 pub use service_manager::ServiceManager;
 pub use settings::Settings;
 
-use crate::process_manager::service_manager::{Logger, ServiceError, ServiceManagerOpts};
+use crate::process_manager::service_manager::{
+    ConfigDir, Logger, ServiceError, ServiceManagerOpts,
+};
 use crate::subreaper::Subreaper;
 
 /// Process Manager Struct
@@ -194,5 +197,59 @@ impl ProcessManager {
         info!("Shutting down process manager...");
 
         Ok(())
+    }
+
+    /// Run the services defined for the process manager instance
+    /// in mprocs
+    pub async fn run_mprocs(self) -> Result<()> {
+        info!("Starting process manager...");
+
+        let cancel_tok = CancellationToken::new();
+        self.spawn_shutdown_task(&cancel_tok);
+
+        if let Some(startup) = &self.settings.startup.run_on_startup {
+            info!("Running startup binary ({})...", startup);
+            self.run_startup_process(startup, &cancel_tok)
+                .await
+                .wrap_err("Failed to run startup process")?;
+        }
+
+        let tmp_dir = env::temp_dir();
+
+        for (name, service) in &self.services {
+            ConfigDir::new(&tmp_dir, &service.config_data)
+                .await
+                .wrap_err_with(|| format!("Failed to create config dir for {}", name))?;
+        }
+
+        mprocs::run_with_config(self.into(), libmprocs::Settings::default())
+            .await
+            .map_err(|e| eyre::eyre!("{e:?}"))
+            .wrap_err("Failed to launch mprocs TUI")
+    }
+}
+
+impl From<ProcessManager> for Vec<ProcConfig> {
+    fn from(value: ProcessManager) -> Self {
+        value
+            .services
+            .into_iter()
+            .map(|(name, service)| ProcConfig {
+                name,
+                cmd: service.process.into(),
+                cwd: std::env::current_dir().ok().map(|p| p.into_os_string()),
+                env: None,
+                autostart: true,
+                autorestart: value.settings.autorestart(),
+
+                stop: StopSignal::SIGTERM,
+
+                deps: Vec::default(),
+
+                mouse_scroll_speed: 5,
+                scrollback_len: 1000,
+                log: None,
+            })
+            .collect()
     }
 }

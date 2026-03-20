@@ -6,7 +6,6 @@
     url = "github:nlewo/nix2container";
     inputs.nixpkgs.follows = "nixpkgs";
   };
-
   outputs =
     { nixpkgs, nix2container, ... }:
     let

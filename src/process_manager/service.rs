@@ -7,8 +7,8 @@ use serde::{Deserialize, Serialize};
 mod config_data;
 mod process;
 
-pub use config_data::ConfigDataMap;
-pub use process::Process;
+pub use config_data::{ConfigData, ConfigDataMap};
+pub use process::{ArgV, Process};
 
 /// Service Data Struct
 ///

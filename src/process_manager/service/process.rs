@@ -1,4 +1,5 @@
 use eyre::{Error, Result, eyre};
+use libmprocs::CmdConfig;
 use serde::{Deserialize, Deserializer, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -8,14 +9,17 @@ pub struct Process {
     pub argv: ArgV,
 }
 
+/// List of args used to run a command
 #[derive(Debug, Serialize)]
 pub struct ArgV(Vec<String>);
 
 impl ArgV {
+    /// Get the name of the binary to run
     pub fn binary(&self) -> &str {
         &self.0[0]
     }
 
+    /// Get the args to the binary to run
     pub fn args(&self) -> &[String] {
         &self.0[1..]
     }
@@ -43,5 +47,11 @@ impl<'de> Deserialize<'de> for ArgV {
     {
         let v = Vec::<String>::deserialize(deserializer)?;
         ArgV::try_from(v).map_err(serde::de::Error::custom)
+    }
+}
+
+impl From<Process> for CmdConfig {
+    fn from(value: Process) -> Self {
+        CmdConfig::Cmd { cmd: value.argv.0 }
     }
 }

@@ -8,6 +8,8 @@
 
 `Nimi` gives you a lightweight PID 1 style runtime without pulling in a full init system. It is designed to pair with the modular services model such that you can define services once and then run them in a container, VM, or anywhere a small process manager is preferred.
 
+It can also provide a nice frontend for use in a dev shell by use of [`mprocs`](https://github.com/pvolok/mprocs) as a library.
+
 > Take a look at the [introductory blog post](https://weyl.ai/plan/put-nix-services-anywhere/).
 
 # Usage

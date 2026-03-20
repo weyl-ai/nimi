@@ -23,6 +23,22 @@ pub struct Settings {
     pub logging: Logging,
 }
 
+impl Settings {
+    /// Convert `RestartMode` into
+    /// mprocs' less semantically clear
+    /// "should this restart".
+    ///
+    /// `RestartMode::UpToCount` is unclear so it becomes
+    /// "this should restart"
+    pub fn autorestart(&self) -> bool {
+        match self.restart.mode {
+            RestartMode::Always => true,
+            RestartMode::UpToCount => true,
+            RestartMode::Never => false,
+        }
+    }
+}
+
 /// Startup Settings Struct
 ///
 /// Configuration for how nimi gets started

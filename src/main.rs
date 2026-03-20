@@ -2,16 +2,16 @@
 
 //! [`Tini`](https://github.com/krallin/tini)-like PID 1 for containers and target for [NixOS modular services](https://nixos.org/manual/nixos/unstable/#modular-services).
 
+pub mod cli;
+pub mod config;
+pub mod process_manager;
+pub mod subreaper;
+
 use clap::Parser;
 use env_logger::Env;
 use eyre::{Context, Result};
 
 use crate::{cli::Cli, subreaper::Subreaper};
-
-pub mod cli;
-pub mod config;
-pub mod process_manager;
-pub mod subreaper;
 
 #[tokio::main]
 async fn main() -> Result<()> {
