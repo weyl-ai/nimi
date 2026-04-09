@@ -6,14 +6,40 @@
 let
   inherit (lib) mkOption types;
 
-  portable-lib = import (pkgs.path + "/nixos/modules/system/service/portable/lib.nix") {
-    inherit lib;
-  };
+  nixosServicesPath = pkgs.path + "/nixos/modules/system/service/portable/lib.nix";
+
+  # renamed in https://github.com/NixOS/nixpkgs/pull/506519
+  libServicesPath = pkgs.path + "/lib/services/lib.nix";
+
+  portable-lib =
+    if (lib ? services) then
+      lib.services
+    else if (lib.pathExists libServicesPath) then
+      (import libServicesPath { inherit lib; })
+    else if (lib.pathExists nixosServicesPath) then
+      (import nixosServicesPath { inherit lib; })
+    else
+      builtins.throw ''
+        Error: could not find a valid reference for modular services' `portable-lib`.
+
+        This probably means you're using a version of nixpkgs without modular 
+        services support, please consider updating or file a bug request.
+      '';
 
   inherit
-    (portable-lib.configure {
-      serviceManagerPkgs = pkgs;
-    })
+    (portable-lib.configure (
+      if (lib ? services) then
+        # serviceManagerPkgs removed in https://github.com/NixOS/nixpkgs/pull/507052
+        {
+          baseModules = [
+            (lib.modules.importApply (pkgs.path + "/lib/services/service.nix") { inherit pkgs; })
+          ];
+        }
+      else
+        {
+          serviceManagerPkgs = pkgs;
+        }
+    ))
     serviceSubmodule
     ;
 in
