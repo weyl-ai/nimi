@@ -6,7 +6,7 @@
 let
   inherit (lib) mkOption types;
 
-  portable-lib = import (pkgs.path + "/nixos/modules/system/service/portable/lib.nix") {
+  portable-lib = import (pkgs.path + "/lib/services/lib.nix") {
     inherit lib;
   };
 
