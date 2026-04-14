@@ -18,7 +18,7 @@ let
   };
 in
 {
-  _class = "home-manager";
+  _class = "homeManager";
 
   options.nimi = mkOption {
     description = ''
